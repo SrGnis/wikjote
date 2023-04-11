@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wikjote"
+version = "0.0.1"
+authors = [
+  { name="SrGnis", email="gnisms97@gmail.com" },
+]
+description = "A Wikcionario scraper using ZIM files"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GPL-3.0-only",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/SrGnis/wikjote"
+"Bug Tracker" = "https://github.com/SrGnis/wikjote/issues"
