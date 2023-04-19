@@ -7,9 +7,6 @@ from queries import xpathqueries
 from libzim.reader import Archive
 import json
 
-import pandas as pd
-from io import StringIO 
-
 def find_or_fail(html: _Element, query: str):
     result = find(html, query)
     if(len(result) == 0):
@@ -25,7 +22,7 @@ def process_zim():
     print("Processing zim")
     
     zim = Archive(config.zimfile)
-    lema = "rojo"
+    lema = "abrir"
     entry = zim.get_entry_by_path(lema)
     page = bytes(entry.get_item().content).decode("UTF-8")
     
@@ -37,6 +34,7 @@ def process_zim():
     locutions = find(es_section, xpathqueries['locutions'])
     additional_info = find(es_section, xpathqueries['additional_info'])
     tranlations = find(es_section, xpathqueries['tranlations'])
+    conjugation = find(es_section, xpathqueries['conjugation'])
     
     entry_obj = {}
     
@@ -70,7 +68,7 @@ def process_zim():
                 dd = find(sense, './dd')
                 has_dd = len(dd) > 0
                 if(has_dd and not has_dt):
-                    print("INFO: MLAFORMATED SENSE, APPENDING TO LAST SENSE")
+                    print("INFO: MALAFORMATED SENSE, APPENDING TO LAST SENSE")
                     sense_array[-1]["content"] += '\n' + get_all_text(dd[0])
                 
             
@@ -83,166 +81,157 @@ def process_zim():
     
     entry_obj['categories'] = category_array
     
+    if(len(conjugation) > 0):
+        conjugation = get_flection(conjugation[0], es_section)
+        entry_obj['conjugation'] = conjugation
+    
     result = json.dumps(entry_obj, ensure_ascii=False, indent=2)
     
     print(result)
 
 
 def get_flection(category, es_section):
+    row_skips = [8,9,15,21,22,26,32,35] # rows that should not be processed
+    sublevels ={
+        8:{
+            'name': 'indicativo',
+            'end': 21,
+            'clear': False
+        },
+        21:{
+            'name': 'subjuntivo',
+            'end': 32,
+            'clear': False
+        },
+        32:{
+            'name': 'imperativo',
+        }
+    }
+    rm_sublevel = {} # auxiliar dict to help remove sublevels when a row is reached
     flection_obj = None
     flection_table = find(category, xpathqueries['flection'])
     if len(flection_table) > 0:
-        
-        print("FLECTION TABLE FOUND")
-        
         rows = find(flection_table[0], './/tr') # type: ignore
         
         flection_obj = {}
+        target_level = []
         top_headers = []
-        row_spans = []
-        num_cols = None
+
+        num_cols = normalize_rows(rows, row_skips, sublevels)
+        print(sublevels)
         
         for row_index, row in enumerate(rows):
-            
-            print("Row:", row_index)
-            
-            if(num_cols == None):
-                num_cols, row_spans = process_table_header_row(row)
-                print("Number of colums:", num_cols)
+
+            #Remove sub level
+            if(rm_sublevel.get(row_index,None) != None):
+                sublevel = rm_sublevel[row_index]
+                target_level = target_level[:target_level.index(sublevel['name'])]
+                target = get_dict_level(flection_obj, target_level)
+                clear = sublevel.get('clear', False)
+                if(clear):
+                    top_headers = []
+
+            #Add sub level
+            if(sublevels.get(row_index,None) != None):
+                sublevel = sublevels[row_index]
+                target = get_dict_level(flection_obj, target_level)
+                target[sublevel['name']] = {}
+                target_level.append(sublevel['name'])
+                end = sublevel.get('end',None)
+                if(end != None):
+                    rm_sublevel[end] = sublevel
+
+            if(row_index in row_skips):
+                continue
             
             row_children = row.getchildren()
             row_has_th = False
             
             # iterate over the children of each row using num_cols to take care of the cells with rowspan
-            for col_index in range(num_cols):
-                
-                if(row_spans[col_index]==None):
+            for col_index in range(len(row_children)):
+                print('ROW', row_index, 'COL', col_index, 'headers', top_headers)
+                target = get_dict_level(flection_obj, target_level)
+                if(True):
                     element: _Element = row_children[col_index]
                     
                     if(element.tag == 'th'):
                         row_has_th = True
                         if(col_index <= len(top_headers)-1):
-                            top_headers[col_index] = get_all_text(element)
+                            if(col_index == 0):
+                                top_headers[col_index] = get_all_text(element)
+                            else:
+                                top_headers[col_index] += "," + get_all_text(element)
                         else:
                             top_headers.insert(col_index, get_all_text(element))
                     if(element.tag == 'td'):
-                        
                         if(row_has_th):
                             header = ','.join([top_headers[0], top_headers[col_index]])
                         else:
                             header = ','.join([top_headers[col_index]])
-                        
-                        row_span = element.get('rowspan')
-                        if(row_span != None):
-                            row_spans[col_index] = (int(row_span), get_all_text(element)) # type: ignore
                             
-                        if(row_spans[col_index] != None):
-                            flection_obj[header] = row_spans[col_index][1]
-                            print(col_index, header, row_spans[col_index][1]) # type: ignore
-                            row_spans[col_index] = (row_spans[col_index][0]-1, row_spans[col_index][1]) # type: ignore
-                            if(row_spans[col_index][0] <= 0): # type: ignore
-                                row_spans[col_index] = None
+                        dict_content = target.get(header, None)
+                        if(dict_content == None):
+                            target[header] =  [get_all_text(element)]
                         else:
-                            flection_obj[header] =  get_all_text(element)
-                            print(col_index, header, get_all_text(element))
-                else:
-                    if(row_has_th):
-                        header = ','.join([top_headers[0], top_headers[col_index]])
-                    else:
-                        header = ','.join([top_headers[col_index]])
-                    
-                    flection_obj[header] = row_spans[col_index][1]
-                    print(col_index, header, row_spans[col_index][1]) # type: ignore
-                    row_spans[col_index] = (row_spans[col_index][0]-1, row_spans[col_index][1]) # type: ignore
-                    if(row_spans[col_index][0] <= 0): # type: ignore
-                        row_spans[col_index] = None
-    print(flection_obj)
+                            content = get_all_text(element)
+                            if content not in dict_content:
+                                target[header].append(content)
     return flection_obj
 
+# TODO: rowspan CAUTION colspan should be normalized before normalizing rowspans
+def normalize_rows(rows: list[_Element], row_skips: list[int], sublevels: dict):
+    last_sublevel = None
+    num_cols = len(find(rows[0], './*[self::th | self::td]')) + sum( int(e.get('colspan','1'))-1 for e in find(rows[0], './*[@colspan]'))
+    for row_index, row in enumerate(rows):
+        with_colspan = find(row, './*[@colspan]')
+        for element in with_colspan:
+            colspan = int(element.get('colspan','1'))
+            element.attrib.pop('colspan')
+            if(len(with_colspan) < num_cols and colspan == num_cols):
+                if row_index not in row_skips: 
+                    row_skips.append(row_index)
+                    #TODO: add sublevels
+                    sublevels[row_index]={
+                        'name': get_all_text(row).strip(),
+                        'clear': True
+                    }
+                    if(last_sublevel != None):
+                        sublevels[last_sublevel]['end'] = row_index
+                    last_sublevel = row_index
+                break
+            for i in range(colspan-1):
+                element.addnext(copy.deepcopy(element))
+    for row_index, row in enumerate(rows):
+        elements = find(row, './*[self::th | self::td]')
+        for col_index, element in enumerate(elements):
+            if(element.get('rowspan', None) != None):
+                rowspan = int(element.get('rowspan', None))
+                element.attrib.pop('rowspan')
+                for offset in range(rowspan-1):
+                    rows[row_index+offset+1].insert(col_index, copy.deepcopy(element))
+    return num_cols
 
 def get_all_text(element: _Element) -> str:
     return ''.join(element.itertext()) # type: ignore
 
+# Process the first row of a table, it asumes that is composed fully by th 
 def process_table_header_row(row: _Element):
-    num_cols: int = len(find_or_fail(row,'./th'))
+    ths = find_or_fail(row,'./th')
+    colspan_sum = 0
+    for th in ths:
+        colspan = th.get('colspan')
+        if(colspan != None):
+            colspan_sum += int(colspan)-1
+    num_cols: int = len(ths)+colspan_sum
     row_spans: list[tuple[int,str]|None] = [None]*num_cols
     
     return num_cols, row_spans
 
-def process_table_header(element: _Element):
-    num_cols: int = len(find_or_fail(row,'./th'))
-    row_spans: list[tuple[int,str]|None] = [None]*num_cols
-    
-    return num_cols, row_spans
-
-
-def get_flection_old(category, es_section):
-    flection_obj = None
-    flection_table = find(category, xpathqueries['flection'])
-    if len(flection_table) > 0:
-        
-        print("FLECTION TABLE FOUND")
-        
-        rows = find(flection_table[0], './/tr') # type: ignore
-        
-        flection_obj = {}
-        top_headers = []
-        row_spans = []
-        num_cols = None
-        for row_index, row in enumerate(rows):
-            print("Row:", row_index)
-            if(num_cols == None):
-                num_cols = len(find_or_fail(row,'./th'))
-                row_spans = [None]*num_cols
-                print("Number of colums:", num_cols)
-            
-            element: _Element
-            
-            row_children = row.getchildren()
-            row_has_th = False
-            for col_index in range(num_cols):
-                
-                if(col_index < len(row_children)):
-                    element: _Element = row_children[col_index]
-                    
-                    if(element.tag == 'th'):
-                        row_has_th = True
-                        if(col_index <= len(top_headers)-1):
-                            top_headers[col_index] = ''.join(element.itertext())
-                        else:
-                            top_headers.insert(col_index, ''.join(element.itertext()))
-                    if(element.tag == 'td'):
-                        
-                        if(row_has_th):
-                            header = ','.join([top_headers[0], top_headers[col_index]])
-                        else:
-                            header = ','.join([top_headers[col_index]])
-                        
-                        row_span = element.get('rowspan')
-                        if(row_span != None):
-                            row_spans[col_index] = (int(row_span), ''.join(element.itertext())) # type: ignore
-                            
-                        if(row_spans[col_index] != None):
-                            flection_obj[header] = row_spans[col_index][1]
-                            print(col_index, header, row_spans[col_index][1]) # type: ignore
-                            row_spans[col_index] = (row_spans[col_index][0]-1, row_spans[col_index][1]) # type: ignore
-                            if(row_spans[col_index][0] <= 0): # type: ignore
-                                row_spans[col_index] = None
-                        else:
-                            flection_obj[header] =  ''.join(element.itertext())
-                            print(col_index, header, ''.join(element.itertext()))
-                else:
-                    if(row_spans[col_index] != None):
-                        
-                            if(row_has_th):
-                                header = ','.join([top_headers[0], top_headers[col_index]])
-                            else:
-                                header = ','.join([top_headers[col_index]])
-                            
-                            flection_obj[header] = row_spans[col_index][1]
-                            print(col_index, header, row_spans[col_index][1]) # type: ignore
-                            row_spans[col_index] = (row_spans[col_index][0]-1, row_spans[col_index][1]) # type: ignore
-                            if(row_spans[col_index][0] <= 0): # type: ignore
-                                row_spans[col_index] = None
-    print(flection_obj)
-    return flection_obj
+def get_dict_level(dict_obj, levels):
+    target = dict_obj
+    try:
+        for level in levels:
+            target = target[level]
+    except:
+        target = dict_obj
+    return target

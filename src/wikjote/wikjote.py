@@ -30,7 +30,7 @@ def init_config(args):
         config.zimfile = os.path.join(config.downloads_dir, 'wiktionary_es.zim')
     else:
         config.zimfile = args.zim_path
-      
+
 def init_folders():
     osutils.mkdir_if_not_exists(config.parent_dir)
     osutils.mkdir_if_not_exists(config.working_dir)
@@ -52,4 +52,3 @@ if __name__ == "__main__":
         download_zim()
         
     process_zim()
-        
