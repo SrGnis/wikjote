@@ -1,10 +1,12 @@
 import copy
+import os
 import config
 from exceptions import XMLNotFound
 from lxml import etree
 from lxml.etree import _Element
 from queries import xpathqueries
 from libzim.reader import Archive
+import traceback
 import json
 
 def find_or_fail(html: _Element, query: str):
@@ -22,74 +24,91 @@ def process_zim():
     print("Processing zim")
     
     zim = Archive(config.zimfile)
-    lema = "abrir"
-    entry = zim.get_entry_by_path(lema)
-    page = bytes(entry.get_item().content).decode("UTF-8")
     
-    html: _Element = etree.HTML(page) # type: ignore
-    
-    # get the Español section
-    es_section = find_or_fail(html, xpathqueries['es_section']).pop()
-    categories = find(es_section, xpathqueries['categories'])
-    locutions = find(es_section, xpathqueries['locutions'])
-    additional_info = find(es_section, xpathqueries['additional_info'])
-    tranlations = find(es_section, xpathqueries['tranlations'])
-    conjugation = find(es_section, xpathqueries['conjugation'])
-    
-    entry_obj = {}
-    
-    entry_obj['lema'] = lema
-    
-    category_array = []
-    for category in categories:
-        category_obj = {}
-        
-        cat = find_or_fail(category, xpathqueries['category'])
-        category_obj['type'] = ''.join(cat[0].itertext()) # type: ignore
-        
-        flection = get_flection(category, es_section)
-        category_obj['flection'] = flection
-        
-        senses = find(category, xpathqueries['senses'])
-        sense_array = []
-        for sense in senses:
-            sense_obj = {}
+    with open(os.path.join(config.downloads_dir, 'eswiktionary-titles'), encoding='utf8') as f:
+        #f = ['lema']
+        cat_procesed = {}
+        for lema in f:
             try:
-                head = find_or_fail(sense, xpathqueries['sense_head'])
-                sense_obj['head'] = ''.join(head[0].itertext()) # type: ignore
+                lema = lema.strip()
+                entry = zim.get_entry_by_path(lema)
+                page = bytes(entry.get_item().content).decode("UTF-8")
                 
-                content = find_or_fail(sense, xpathqueries['sense_content'])
-                sense_obj['content'] = ''.join(content[0].itertext()) # type: ignore
-            except:
-                print("WARNING: ERROR ON PARSING SENSES")
-                sense_obj = None
-                # check if the sense is malformated
-                has_dt = len(find(sense, './dt')) > 0
-                dd = find(sense, './dd')
-                has_dd = len(dd) > 0
-                if(has_dd and not has_dt):
-                    print("INFO: MALAFORMATED SENSE, APPENDING TO LAST SENSE")
-                    sense_array[-1]["content"] += '\n' + get_all_text(dd[0])
+                html: _Element = etree.HTML(page) # type: ignore
                 
-            
-            if(sense_obj != None):
-                sense_array.append(copy.deepcopy(sense_obj))
-            
-        category_obj['senses'] = sense_array
+                # get the Español section
+                es_section = find_or_fail(html, xpathqueries['es_section']).pop()
+                categories = find(es_section, xpathqueries['categories'])
+                locutions = find(es_section, xpathqueries['locutions']) # TODO
+                additional_info = find(es_section, xpathqueries['additional_info']) # TODO
+                tranlations = find(es_section, xpathqueries['tranlations']) # TODO
+                conjugation = find(es_section, xpathqueries['conjugation'])
+                
+                entry_obj = {}
+                
+                entry_obj['lema'] = lema
+                
+                category_array = []
+                for category in categories:
+                    category_obj = {}
+                    
+                    cat = find_or_fail(category, xpathqueries['category'])
+                    try:
+                        category_obj['type'] = ''.join(cat[0].itertext()) # type: ignore
+                        
+                        flection = get_flection(category, es_section)
+                        category_obj['flection'] = flection
+                        
+                        senses = find(category, xpathqueries['senses'])
+                        sense_array = []
+                        for sense in senses:
+                            sense_obj = {}
+                            try:
+                                head = find_or_fail(sense, xpathqueries['sense_head'])
+                                sense_obj['head'] = ''.join(head[0].itertext()) # type: ignore
+                                
+                                content = find_or_fail(sense, xpathqueries['sense_content'])
+                                sense_obj['content'] = ''.join(content[0].itertext()) # type: ignore
+                            except:
+                                sense_obj = None
+                                # check if the sense is malformated
+                                has_dt = len(find(sense, './dt')) > 0
+                                dd = find(sense, './dd')
+                                has_dd = len(dd) > 0
+                                if(has_dd and not has_dt):
+                                    sense_array[-1]["content"] += '\n' + get_all_text(dd[0])
+                                
+                            
+                            if(sense_obj != None):
+                                sense_array.append(copy.deepcopy(sense_obj))
+                            
+                        category_obj['senses'] = sense_array
+                        
+                        category_array.append(copy.deepcopy(category_obj))
+
+                        n = cat_procesed.get(category_obj['type'],0)
+                        cat_procesed[category_obj['type']] = n+1
+                    except Exception as e:
+                        print('Error in category:', cat[0].text ,'of lema:', lema)
+
+                
+                entry_obj['categories'] = category_array
+                
+                if(len(conjugation) > 0):
+                    conjugation = get_flection(conjugation[0], es_section)
+                    entry_obj['conjugation'] = conjugation
+                
+                result = json.dumps(entry_obj, ensure_ascii=False, indent=2)
+
+            except Exception as e: 
+                if('//h2[@id="Español"]' not in str(e)):
+                    print('Error in lema: ', lema)
         
-        category_array.append(copy.deepcopy(category_obj))
-    
-    entry_obj['categories'] = category_array
-    
-    if(len(conjugation) > 0):
-        conjugation = get_flection(conjugation[0], es_section)
-        entry_obj['conjugation'] = conjugation
-    
-    result = json.dumps(entry_obj, ensure_ascii=False, indent=2)
-    
-    print(result)
+        print(json.dumps(cat_procesed, ensure_ascii=False, indent=2))
+        
 
 
+# TODO: non specific function
 def get_flection(category, es_section):
     row_skips = [8,9,15,21,22,26,32,35] # rows that should not be processed
     sublevels ={
@@ -118,7 +137,6 @@ def get_flection(category, es_section):
         top_headers = []
 
         num_cols = normalize_rows(rows, row_skips, sublevels)
-        print(sublevels)
         
         for row_index, row in enumerate(rows):
 
@@ -149,7 +167,6 @@ def get_flection(category, es_section):
             
             # iterate over the children of each row using num_cols to take care of the cells with rowspan
             for col_index in range(len(row_children)):
-                print('ROW', row_index, 'COL', col_index, 'headers', top_headers)
                 target = get_dict_level(flection_obj, target_level)
                 if(True):
                     element: _Element = row_children[col_index]
@@ -213,19 +230,6 @@ def normalize_rows(rows: list[_Element], row_skips: list[int], sublevels: dict):
 
 def get_all_text(element: _Element) -> str:
     return ''.join(element.itertext()) # type: ignore
-
-# Process the first row of a table, it asumes that is composed fully by th 
-def process_table_header_row(row: _Element):
-    ths = find_or_fail(row,'./th')
-    colspan_sum = 0
-    for th in ths:
-        colspan = th.get('colspan')
-        if(colspan != None):
-            colspan_sum += int(colspan)-1
-    num_cols: int = len(ths)+colspan_sum
-    row_spans: list[tuple[int,str]|None] = [None]*num_cols
-    
-    return num_cols, row_spans
 
 def get_dict_level(dict_obj, levels):
     target = dict_obj
