@@ -8,6 +8,24 @@ from queries import xpathqueries
 from libzim.reader import Archive
 import traceback
 import json
+import re
+
+non_senses = [
+    'Información adicional',
+    'Locuciones',
+    'Etimología',
+    'Véase también',
+    'Traducciones',
+    'Abreviaciones',
+    'Derivados',
+    'Pronunciación y escritura',
+    'Refranes',
+    'Conjugacións',
+    'Información avanzada',
+    'Ejemplos',
+]
+
+cat_procesed = {}
 
 def find_or_fail(html: _Element, query: str):
     result = find(html, query)
@@ -26,8 +44,7 @@ def process_zim():
     zim = Archive(config.zimfile)
     
     with open(os.path.join(config.downloads_dir, 'eswiktionary-titles'), encoding='utf8') as f:
-        #f = ['lema']
-        cat_procesed = {}
+        f = ['ARPU']
         for lema in f:
             try:
                 lema = lema.strip()
@@ -35,77 +52,125 @@ def process_zim():
                 page = bytes(entry.get_item().content).decode("UTF-8")
                 
                 html: _Element = etree.HTML(page) # type: ignore
-                
-                # get the Español section
-                es_section = find_or_fail(html, xpathqueries['es_section']).pop()
-                categories = find(es_section, xpathqueries['categories'])
-                locutions = find(es_section, xpathqueries['locutions']) # TODO
-                additional_info = find(es_section, xpathqueries['additional_info']) # TODO
-                tranlations = find(es_section, xpathqueries['tranlations']) # TODO
-                conjugation = find(es_section, xpathqueries['conjugation'])
-                
+
+                if(False): #TODO: use argument for parsing only a specific language
+                    languages = find_or_fail(html, xpathqueries['language_section_chosed'].format('Español'))
+                else:
+                    languages = find_or_fail(html, xpathqueries['language_sections'])
+
                 entry_obj = {}
-                
                 entry_obj['lema'] = lema
-                
-                category_array = []
-                for category in categories:
-                    category_obj = {}
-                    
-                    cat = find_or_fail(category, xpathqueries['category'])
-                    try:
-                        category_obj['type'] = ''.join(cat[0].itertext()) # type: ignore
-                        
-                        flection = get_flection(category, es_section)
-                        category_obj['flection'] = flection
-                        
-                        senses = find(category, xpathqueries['senses'])
-                        sense_array = []
-                        for sense in senses:
-                            sense_obj = {}
-                            try:
-                                head = find_or_fail(sense, xpathqueries['sense_head'])
-                                sense_obj['head'] = ''.join(head[0].itertext()) # type: ignore
-                                
-                                content = find_or_fail(sense, xpathqueries['sense_content'])
-                                sense_obj['content'] = ''.join(content[0].itertext()) # type: ignore
-                            except:
-                                sense_obj = None
-                                # check if the sense is malformated
-                                has_dt = len(find(sense, './dt')) > 0
-                                dd = find(sense, './dd')
-                                has_dd = len(dd) > 0
-                                if(has_dd and not has_dt):
-                                    sense_array[-1]["content"] += '\n' + get_all_text(dd[0])
-                                
-                            
-                            if(sense_obj != None):
-                                sense_array.append(copy.deepcopy(sense_obj))
-                            
-                        category_obj['senses'] = sense_array
-                        
-                        category_array.append(copy.deepcopy(category_obj))
 
-                        n = cat_procesed.get(category_obj['type'],0)
-                        cat_procesed[category_obj['type']] = n+1
-                    except Exception as e:
-                        print('Error in category:', cat[0].text ,'of lema:', lema)
+                for language in languages:
+                    language_obj = {}
+                    x = find_or_fail(language, xpathqueries['section_name'])
+                    language_name = get_all_text(find_or_fail(language, xpathqueries['section_name']).pop())
+                    inner_sections = find(language, xpathqueries['inner_sections'])
+                    categories_array = []
 
+                    for section in inner_sections:
+                        section_name = get_all_text(find_or_fail(section, xpathqueries['section_name']).pop())
+                        
+                        if(section_name not in non_senses):
+                            section_obj = process_senses_section(section, section_name, language, lema)
+                            categories_array.append(copy.deepcopy(section_obj))
+                        else:
+                            language_obj[section_name] = fire_callback(section_name, section, section_name, language, lema)    
+
+                    if(len(categories_array) > 0):
+                        language_obj['categories'] = categories_array
+
+                    # if(len(conjugation) > 0):
+                    #     conjugation = get_flection(conjugation[0], es_section)
+                    #     entry_obj['conjugation'] = conjugation
                 
-                entry_obj['categories'] = category_array
-                
-                if(len(conjugation) > 0):
-                    conjugation = get_flection(conjugation[0], es_section)
-                    entry_obj['conjugation'] = conjugation
-                
+                    entry_obj[language_name] = copy.deepcopy(language_obj)
+
                 result = json.dumps(entry_obj, ensure_ascii=False, indent=2)
 
+                #print(result)
+
             except Exception as e: 
-                if('//h2[@id="Español"]' not in str(e)):
-                    print('Error in lema: ', lema)
+                print('Error in lema: ', lema)
+                #traceback.print_exc()
         
-        print(json.dumps(cat_procesed, ensure_ascii=False, indent=2))
+        #print(json.dumps(cat_procesed, ensure_ascii=False, indent=2))
         
+
+def process_section_to_text(section, section_name, language, lema):
+    contents = find(section, './summary/following-sibling::*')
+    res = ''
+    for content in contents:
+        res += get_all_text(content).strip()
+    return res
+
+def process_list(section, section_name, language, lema):
+    contents = find(section, './/li')
+    res = []
+    for content in contents:
+        res.append(get_all_text(content).strip())
+    return res
+
+def process_tranlations(section, section_name, language, lema):
+    contents = find(section, './/li')
+    res = {}
+    for content in contents:
+        txt = get_all_text(content).strip()
+        txt = re.sub('\[.*\]', '', txt)# remove [1]
+        txt = re.sub('\(.*\).*', '', txt)# remove (es)...
+        txt = txt.split(':')
+        if(len(txt) == 2):
+            res[txt[0].strip()] = txt[1].strip()
+    return res
+
+
+def process_senses_section(section, section_name, language, lema ):    
+    category_obj = {}
+    
+    try:
+        category_obj['type'] = section_name
+        
+        flection = get_flection(section, language)
+        category_obj['flection'] = flection
+        
+        senses = find(section, xpathqueries['senses'])
+        sense_array = []
+        for sense in senses:
+
+            #if the sense has ul probably is not a sense
+            if(len(find(sense, './/ul')) > 0):
+                continue
+
+            sense_obj = {}
+            try:
+                head = find_or_fail(sense, xpathqueries['sense_head'])
+                sense_obj['head'] = ''.join(head[0].itertext()) # type: ignore
+                
+                content = find_or_fail(sense, xpathqueries['sense_content'])
+                sense_obj['content'] = ''.join(content[0].itertext()) # type: ignore
+            except:
+                sense_obj = None
+                # check if the sense is malformated
+                has_dt = len(find(sense, './dt')) > 0
+                dd = find(sense, './dd')
+                has_dd = len(dd) > 0
+                if(has_dd and not has_dt):
+                    sense_array[-1]["content"] += '\n' + get_all_text(dd[0])
+                
+            
+            if(sense_obj != None):
+                sense_array.append(copy.deepcopy(sense_obj))
+            
+        category_obj['senses'] = sense_array
+
+        n = cat_procesed.get(category_obj['type'],0)
+        cat_procesed[category_obj['type']] = n+1
+        
+    except Exception as e:
+        print('Error in category:', section_name[0].text ,'of lema:', lema)
+    finally:
+        return category_obj
+    
 
 
 # TODO: non specific function
@@ -239,3 +304,19 @@ def get_dict_level(dict_obj, levels):
     except:
         target = dict_obj
     return target
+
+
+section_callbacks = {
+    'Etimología': process_section_to_text,
+    'Locuciones': process_list,
+    'Información adicional': process_list,
+    'Véase también': process_list,
+    'Traducciones': process_tranlations
+}
+
+def fire_callback(event, section, section_name, language, lema):
+    cllbk = section_callbacks.get(event, None)
+    if cllbk == None:
+        return None
+    
+    return cllbk(section, section_name, language, lema)

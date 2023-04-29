@@ -1,8 +1,10 @@
 xpathqueries = {
     'wiktionary_es_download_links': './/a[contains(text(),"wiktionary_es_all_nopic") ]',
-    'es_section': '//h2[@id="Español"]/parent::summary/parent::details',
-    'categories': './/details/dl/parent::details',
-    'category': './/summary/*[self::h1 | self::h2 | self::h3 | self::h4 | self::h5]',
+    'language_section_chosed': '//h2[@id="{}"]/parent::summary/parent::details',
+    'language_sections': '//details[@data-level="2"]',
+    'inner_sections': './details[@data-level="3"]',
+    'categories': './details/dl/parent::details',
+    'section_name': './summary/*[self::h1 | self::h2 | self::h3 | self::h4 | self::h5]',
     'flection': './/table[contains(@class,"inflection-table")]',
     'senses': './dl',
     'sense_head': './/dt',
