@@ -1,0 +1,69 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Wikcionary{
+    - Archive zim
+    - Dict{string, Page} pages
+    - Dict wik_object
+
+}
+
+class HTMLObject{
+    - Element root
+
+    + find()
+    + find_or_fail()
+}
+
+class Page extends HTMLObject{
+    - String lema
+    - Dict{string, LanguajeSection} languajes
+    + Dict page_object
+
+}
+
+class Section extends HTMLObject{
+    - String name
+    - Processor processor
+    + Dict section_object
+
+    + process()
+}
+
+class LanguajeSection extends Section{
+    - Dict{string, Section} inner_sections
+}
+
+class SpecificSection extends Section{
+
+}
+note bottom of SpecificSection : senses, etimology, tranlations ...
+
+class Processor{
+    + run()
+}
+
+class SpecificProcessor extends Processor{
+
+}
+note bottom of SpecificProcessor : senses, tranlations, plain text, list ...
+
+class Registry{
+    - Dict{string, Object} registry
+    
+    + get()
+    + remove()
+    + register()
+}
+
+class ProcessorRegistry extends Registry{
+
+}
+
+Wikcionary *-- Page
+Page *-- LanguajeSection
+LanguajeSection *-- Section
+Section -- Processor
+ProcessorRegistry -- Processor
+
+@enduml

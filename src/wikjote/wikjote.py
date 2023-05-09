@@ -2,7 +2,7 @@ import config
 import os
 import argparse
 from utils import osutils, netutils
-from extractor import process_zim
+from extractor3 import process_zim2
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -51,4 +51,4 @@ if __name__ == "__main__":
     if(not args.no_download and args.zim_path == None):
         download_zim()
         
-    process_zim()
+    process_zim2()
