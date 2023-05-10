@@ -1,5 +1,5 @@
-from wikjote.processors.procesor import Processor
-from wikjote.htmlobject import HTMLObject
+from processors.procesor import Processor
+from htmlobject import HTMLObject
 
 class DefaultProcessor(Processor):
 

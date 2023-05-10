@@ -1,7 +1,7 @@
 from htmlobject import HTMLObject
 from lxml.etree import _Element
-from wikjote.queries import xpathqueries
-from wikjote.section import Section
+from queries import xpathqueries
+from section import Section
 
 class Page(HTMLObject):
     
@@ -15,6 +15,3 @@ class Page(HTMLObject):
         elements = self.find_or_fail(xpathqueries['language_sections'])
         sections = [Section(element.root) for element in elements]
         return {section.name: section for section in sections}
-        
-        # names = [element.get_section_name() for element in elements]
-        

@@ -1,8 +1,16 @@
+from extractor3 import process_zim2
 import config
 import os
 import argparse
 from utils import osutils, netutils
-from extractor3 import process_zim2
+from registry import ProcessorRegistry
+from processors.defaultprocessor import DefaultProcessor
+from processors.listprocessor import ListProcessor
+from processors.translationsprocessor import TranslationsProcessor
+from processors.sensesprocessor import SensesProcessor
+from processors.tableprocessor import TableProcessor
+from processors.languageprocessor import LanguageProcessor
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -41,9 +49,21 @@ def download_zim():
         netutils.download_last_zim(config.zimfile)
     else:
         netutils.download_file(args.zim_url, config.zimfile)
+        
+def register_processors():
+    
+    ProcessorRegistry.register('Etimología', DefaultProcessor)
+    ProcessorRegistry.register('Locuciones', ListProcessor)
+    ProcessorRegistry.register('Información adicional', ListProcessor)
+    ProcessorRegistry.register('Véase también', ListProcessor)
+    ProcessorRegistry.register('Traducciones', TranslationsProcessor)
+    ProcessorRegistry.register('Senses', SensesProcessor)
+    ProcessorRegistry.register('Table', TableProcessor)
+    ProcessorRegistry.register('Language', LanguageProcessor)
 
 if __name__ == "__main__":
     args = parse_args()
+    register_processors()
     init_config(args)
     
     init_folders()

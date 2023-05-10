@@ -1,7 +1,7 @@
 from __future__ import annotations
 from lxml.etree import _Element
-from wikjote.exceptions import XMLNotFound
-from wikjote.queries import xpathqueries
+from exceptions import XMLNotFound
+from queries import xpathqueries
 
 class HTMLObject:
     

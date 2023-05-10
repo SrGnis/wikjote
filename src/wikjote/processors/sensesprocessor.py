@@ -29,10 +29,10 @@ class SensesProcessor(Processor):
                 sense_obj = {}
                 try:
                     head = sense.find_or_fail(xpathqueries['sense_head'])
-                    sense_obj['head'] = head.[0].text() # type: ignore
+                    sense_obj['head'] = head[0].text() # type: ignore
                     
                     content = sense.find_or_fail(xpathqueries['sense_content'])
-                    sense_obj['content'] = content.[0].text() # type: ignore
+                    sense_obj['content'] = content[0].text() # type: ignore
                 except:
                     sense_obj = None
                     # check if the sense is malformated

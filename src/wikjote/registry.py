@@ -1,6 +1,9 @@
-from wikjote.htmlobject import HTMLObject
-from wikjote.processors.procesor import Processor
-from wikjote.processors.defaultprocessor import DefaultProcessor
+from htmlobject import HTMLObject
+from processors.procesor import Processor
+from processors.defaultprocessor import DefaultProcessor
+
+from utils.data import is_sense
+
 
 class ProcessorRegistry:
 
@@ -13,15 +16,35 @@ class ProcessorRegistry:
         #TODO: check no duplicates
         ProcessorRegistry.registry[key] = object
     
+    # TODO: is_sense alternative
     @staticmethod
     def get(key: str, root: HTMLObject) -> Processor:
-        res = ProcessorRegistry.registry.get(key, ProcessorRegistry.default)
+        print(key, '->' ,is_sense(key))
+        res = ProcessorRegistry.registry.get(is_sense(key), ProcessorRegistry.default)
         return res(root)
     
     @staticmethod
     def remove( key: str):
         del ProcessorRegistry.registry[key]
 
-# def register_processors():
-#     #TODO
-#     ProcessorRegistry.register('', DefaultProcessor)
+class SectionRegistry:
+
+    registry: dict[str, type] = {}
+
+    default: type = DefaultProcessor
+
+    @staticmethod
+    def register(key: str, object: type):
+        #TODO: check no duplicates
+        ProcessorRegistry.registry[key] = object
+    
+    # TODO: is_sense alternative
+    @staticmethod
+    def get(key: str, root: HTMLObject) -> Processor:
+        print(key, '->' ,is_sense(key))
+        res = ProcessorRegistry.registry.get(is_sense(key), ProcessorRegistry.default)
+        return res(root)
+    
+    @staticmethod
+    def remove( key: str):
+        del ProcessorRegistry.registry[key]

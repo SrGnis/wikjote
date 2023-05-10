@@ -4,6 +4,7 @@ from lxml import etree
 from lxml.etree import _Element
 from libzim.reader import Archive 
 from page import Page
+import traceback
 
 def process_zim2():
     print("Processing zim")
@@ -25,3 +26,4 @@ def process_zim2():
                 
             except Exception as e: 
                 print('Error in lema: ', lema)
+                traceback.print_exc()
