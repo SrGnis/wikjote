@@ -23,6 +23,8 @@ def process_zim2():
                 page = Page(entry_html, lema)
                 
                 print('Page:', page.lema, 'Languajes:', page.languajes) #debug
+
+                page.process()
                 
             except Exception as e: 
                 print('Error in lema: ', lema)

@@ -1,7 +1,7 @@
 from processors.procesor import Processor
-from htmlobject import HTMLObject
 from queries import xpathqueries
-from section import Section
+from sections.section import Section
+from registry import SectionRegistry
 
 class LanguageProcessor(Processor):
 
@@ -11,4 +11,4 @@ class LanguageProcessor(Processor):
 
     def run(self):
         elements = self.object.find(xpathqueries['inner_sections'])
-        self.object.subsections = [Section(i.root) for i in elements] 
+        self.object.subsections = [SectionRegistry.get(i) for i in elements] 

@@ -1,6 +1,6 @@
 from processors.procesor import Processor
 from htmlobject import HTMLObject
-from section import Section
+from sections.section import Section
 from queries import xpathqueries
 from copy import deepcopy
 
