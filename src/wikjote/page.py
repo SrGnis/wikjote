@@ -10,9 +10,11 @@ class Page(HTMLObject):
         self.lema: str = lema
         self.languajes: dict[str, LanguageSection] = self.get_languajes()
         
-    #TODO: remove not wanted sections? Ej. 'Referencias y notas'
     def get_languajes(self):
-        elements = self.find_or_fail(xpathqueries['language_sections'])
+        if(True):
+            elements = self.find_or_fail(xpathqueries['language_section_chosed'].format('Español'))
+        else:
+            elements = self.find_or_fail(xpathqueries['language_sections'])
         sections = [LanguageSection(element.root) for element in elements]
         return {section.name: section for section in sections}
     

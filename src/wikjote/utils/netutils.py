@@ -6,6 +6,7 @@ from queries import xpathqueries
 
 def download_last_zim(destination: str):
     # TODO: add mirrors
+    # TODO: download titles from https://dumps.wikimedia.org/other/pagetitles/
     url = 'https://download.kiwix.org/zim/wiktionary/'
     response = requests.get(url)
     if(response.status_code != 200):

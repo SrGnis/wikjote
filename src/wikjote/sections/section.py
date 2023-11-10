@@ -2,6 +2,7 @@ from htmlobject import HTMLObject
 from lxml.etree import _Element
 import queries
 from processors.defaultprocessor import DefaultProcessor
+import json 
 
 class Section(HTMLObject):
 
@@ -24,3 +25,5 @@ class Section(HTMLObject):
         res = []
         for section in self.subsections:
             res.append((section.name, section.process()))
+            
+        print(json.dumps(res, ensure_ascii=False, indent= 2)) #debug

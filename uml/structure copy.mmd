@@ -1,0 +1,72 @@
+```mermaid
+---
+title: Wikjote
+---
+
+classDiagram
+    
+    class Wikcionary{
+        - Archive zim
+        - Dict pages
+        - Dict wik_object
+    }
+
+    class HTMLObject{
+        - Element root
+
+        + find()
+        + find_or_fail()
+    }
+
+    class Page{
+        - String lema
+        - Dict languajes
+        + Dict page_object
+
+    }
+
+    class Section{
+        - String name
+        - Processor processor
+        + Dict section_object
+
+        + process()
+    }
+
+    class LanguajeSection{
+        - Dict inner_sections
+    }
+
+    class SpecificSection
+
+    class Processor{
+        + run()
+    }
+
+    class SpecificProcessor
+
+    class Registry{
+        - Dict registry
+        
+        + get()
+        + remove()
+        + register()
+    }
+
+    class ProcessorRegistry
+
+
+    HTMLObject <|-- Page
+    HTMLObject <|-- Section
+
+    Section <|-- LanguajeSection
+    Section <|-- SpecificSection
+
+    Processor <|-- SpecificProcessor
+
+    Registry  <|-- ProcessorRegistry
+
+    Page --* Section
+    Section --* Processor
+
+```

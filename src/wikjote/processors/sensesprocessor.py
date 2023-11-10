@@ -4,6 +4,8 @@ from sections.section import Section
 from queries import xpathqueries
 from copy import deepcopy
 
+from processors.attributeprocessor import AttributeProcessor
+
 class SensesProcessor(Processor):
 
     def __init__(self, object: Section):
@@ -21,10 +23,13 @@ class SensesProcessor(Processor):
             senses = self.object.find(xpathqueries['senses'])
             sense_array = []
             for sense in senses:
+                
+                # print(sense.text()) #debug
 
-                #if the sense has ul probably is not a sense
-                if(len(sense.find('.//ul')) > 0):
-                    continue
+                # TODO: senses can have ul to specify attributes, parse those correctly
+                # WRONG: if the sense has ul probably is not a sense
+                # if(len(sense.find('.//ul')) > 0):
+                #     continue
 
                 sense_obj = {}
                 try:
@@ -33,7 +38,12 @@ class SensesProcessor(Processor):
                     
                     content = sense.find_or_fail(xpathqueries['sense_content'])
                     sense_obj['content'] = content[0].text() # type: ignore
-                except:
+                    
+                    attributes_section = sense.find(xpathqueries['sense_attributes'])
+                    if(len(attributes_section)>0):
+                        sense_obj['attributes'] = AttributeProcessor(attributes_section[0]).run()
+                except Exception as e:
+                    print(e)
                     sense_obj = None
                     # check if the sense is malformated
                     has_dt = len(sense.find('./dt')) > 0

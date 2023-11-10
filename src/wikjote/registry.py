@@ -20,7 +20,7 @@ class ProcessorRegistry:
     # TODO: is_sense alternative
     @staticmethod
     def get(key: str, root: HTMLObject) -> Processor:
-        print(key, '->' ,is_sense(key))
+        #print(key, '->' ,is_sense(key)) #debug
         res = ProcessorRegistry.registry.get(is_sense(key), ProcessorRegistry.default)
         return res(root)
     
@@ -44,7 +44,7 @@ class SectionRegistry:
     @staticmethod
     def get(root: HTMLObject) -> Section:
         key = root.get_section_name()
-        print(key, '->' ,is_sense(key)) #debug
+        # print(key, '->' ,is_sense(key)) #debug
         res = SectionRegistry.registry.get(is_sense(key), SectionRegistry.default)
         return res(root.root)
     

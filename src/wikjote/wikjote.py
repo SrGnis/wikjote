@@ -11,6 +11,7 @@ from processors.translationsprocessor import TranslationsProcessor
 from processors.sensesprocessor import SensesProcessor
 from processors.tableprocessor import TableProcessor
 from processors.languageprocessor import LanguageProcessor
+from processors.attributeprocessor import AttributeProcessor
 
 from sections.etymologysection import EtymologySection
 from sections.locutionssection import LocutionsSection
@@ -52,6 +53,7 @@ def init_folders():
     osutils.mkdir_if_not_exists(config.parent_dir)
     osutils.mkdir_if_not_exists(config.working_dir)
     osutils.mkdir_if_not_exists(config.downloads_dir)
+    
     
 def download_zim():
     if( args.zim_url == None):
