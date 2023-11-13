@@ -28,7 +28,7 @@ def process_zim2():
                 
                 page = Page(entry_html, lema)
                 
-                print('Page:', page.lema, 'Languajes:', page.languajes) #debug
+                # print('Page:', page.lema, 'Languajes:', page.sections) #debug
 
                 page.process()
                 

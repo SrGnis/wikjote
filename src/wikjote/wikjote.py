@@ -3,7 +3,7 @@ import config
 import os
 import argparse
 from utils import osutils, netutils
-from registry import ProcessorRegistry, SectionRegistry
+from registry import ProcessorRegistry
 
 from processors.defaultprocessor import DefaultProcessor
 from processors.listprocessor import ListProcessor
@@ -12,14 +12,6 @@ from processors.sensesprocessor import SensesProcessor
 from processors.tableprocessor import TableProcessor
 from processors.languageprocessor import LanguageProcessor
 from processors.attributeprocessor import AttributeProcessor
-
-from sections.etymologysection import EtymologySection
-from sections.locutionssection import LocutionsSection
-from sections.additionalinfosection import AdditionalInfoSection
-from sections.seemoresection import SeeMoreSection
-from sections.sensessection import SensesSection
-from sections.translationssection import TranslationsSection
-from sections.languagesection import LanguageSection
 
 
 def parse_args():
@@ -72,20 +64,9 @@ def register_processors():
     ProcessorRegistry.register('Table', TableProcessor)
     ProcessorRegistry.register('Language', LanguageProcessor)
 
-def register_sections():
-    
-    SectionRegistry.register('Etimología', EtymologySection)
-    SectionRegistry.register('Locuciones', LocutionsSection)
-    SectionRegistry.register('Información adicional', AdditionalInfoSection)
-    SectionRegistry.register('Véase también', SeeMoreSection)
-    SectionRegistry.register('Traducciones', TranslationsSection)
-    SectionRegistry.register('Senses', SensesSection)
-    SectionRegistry.register('Language', LanguageSection)
-
 if __name__ == "__main__":
     args = parse_args()
     register_processors()
-    register_sections()
     init_config(args)
     
     init_folders()

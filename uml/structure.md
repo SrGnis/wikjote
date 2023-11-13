@@ -4,12 +4,6 @@ title: Wikjote
 ---
 
 classDiagram
-    
-    class Wikcionary{
-        - Archive zim
-        - Dict pages
-        - Dict wik_object
-    }
 
     class HTMLObject{
         - Element root
@@ -38,15 +32,45 @@ classDiagram
         + run()
     }
 
-    class Registry{
-        - Dict registry
+    class ProcessorAssignator{
+        - Dict[String,AssignationRule] rules
+        - Dict[String,Processor] name_rules
         
-        + get()
-        + remove()
-        + register()
+        + assign(Section)
+        + remove(AssignationRule)
+        + register(AssignationRule)
     }
 
-    class ProcessorRegistry
+    class AssignationRule{
+        - processor
+
+        + evaluate(Section) None | Processor
+    }
+
+    class RegexRule{
+        - Processor processor
+        - String field
+        - String regex
+
+        + evaluate(Section) None | Processor
+    }
+
+    class XpathRule{
+        - Processor processor
+        - String xpath
+
+        + evaluate(Section) None | Processor
+    }
+
+    note for SectionNameRule "Special case, this is converted into a dict key value pair in the ProcessorAssignator" 
+    class SectionNameRule{
+        + Processor processor
+        + String name
+
+        + evaluate(Section) None | Processor
+    }
+
+
 
 
     HTMLObject <|-- Page
@@ -54,11 +78,14 @@ classDiagram
 
     Section --* Section
 
-
-
-    Registry  <|-- ProcessorRegistry
-
     Page --* Section
     Section --* Processor
+
+    ProcessorAssignator --* AssignationRule
+    AssignationRule --* Processor
+
+    AssignationRule <|-- RegexRule
+    AssignationRule <|-- XpathRule
+    AssignationRule <|-- SectionNameRule
 
 ```

@@ -2,6 +2,7 @@ xpathqueries = {
     'wiktionary_es_download_links': './/a[contains(text(),"wiktionary_es_all_nopic") ]',
     'language_section_chosed': '//h2[@id="{}"]/parent::summary/parent::details',
     'language_sections': '//details[descendant::*[@class="headline-lang"]]',
+    'sense_sections': '//details[child::dl]',
     'inner_sections': './details',
     'categories': './details/dl/parent::details',
     'section_name': './summary/*[self::h1 | self::h2 | self::h3 | self::h4 | self::h5]',
