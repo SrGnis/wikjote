@@ -1,13 +1,10 @@
 from htmlobject import HTMLObject
 from lxml.etree import _Element
 import queries
-from processors.defaultprocessor import DefaultProcessor
 import json
-from registry import ProcessorRegistry 
+from rules.assignator import ProcessorAssignator
 
 class Section(HTMLObject):
-
-    fallback_processor = DefaultProcessor
     
     def __init__(self, root: _Element) -> None:
         super().__init__(root)
@@ -17,11 +14,15 @@ class Section(HTMLObject):
         self.set_processor()
 
     def set_processor(self):
-        self.processor = ProcessorRegistry.get(self.name, self.root)
+        self.processor = ProcessorAssignator.assign(self)
 
     def process(self):
+        print("Procesing Section {}, type {}, with {}".format(self.name, self.processor.section_type, self.processor.__class__.__name__)) #debug
         section_res = self.processor.run() # {name, type, contents} TODO set type in Rules
+        print("Procesing Sub Sections {},".format(self.name)) #debug
         section_res['sub_sections'] = self.process_subsections()
+        
+        return section_res
         
         
     def process_subsections(self):

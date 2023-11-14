@@ -2,6 +2,7 @@ from htmlobject import HTMLObject
 from lxml.etree import _Element
 from queries import xpathqueries
 from section import Section
+import json
 
 class Page(HTMLObject):
     
@@ -9,7 +10,8 @@ class Page(HTMLObject):
         super().__init__(root)
         self.lema: str = lema
         root_obj = HTMLObject(root)
-        self.sections: list[Section] = Section.get_inner_sections(root_obj, 'language_sections')
+        self.sections: list[Section] = Section.get_inner_sections(root_obj, 'first_sections')
+        print("New Page for lema {}, number of sections {}".format(self.lema,len(self.sections))) #debug
         
     def get_languajes(self):
         if(True):
@@ -18,7 +20,9 @@ class Page(HTMLObject):
             elements = self.find_or_fail(xpathqueries['language_sections'])
     
     def process(self):
-        print(len(self.sections))
+        print("Procesing Page {}".format(self.lema)) #debug
+        res = []
         for section in self.sections:
-            print(section.name, section.processor.__class__)
-            section.process()
+            res.append(section.process())
+            
+        print(json.dumps(res, ensure_ascii=False, indent= 2)) #debug

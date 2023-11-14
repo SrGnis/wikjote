@@ -1,10 +1,11 @@
 from processors.procesor import Processor
-from htmlobject import HTMLObject
+from section import Section
+
 
 class AttributeProcessor(Processor):
 
-    def __init__(self, object: HTMLObject):
-        super().__init__(object)
+    def __init__(self, object: Section, section_type: str):
+        super().__init__(object, section_type)
 
     def run(self):
         contents = self.object.find( './/li')
@@ -20,6 +21,10 @@ class AttributeProcessor(Processor):
                     attr_content = [content.strip() for content in attr_content]
                 res[attr_name] = attr_content
                 
-        return res
+        return {
+            'name': self.object.name,
+            'type': self.section_type,
+            'contents': res,
+        }
     
         

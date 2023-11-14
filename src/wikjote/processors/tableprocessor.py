@@ -1,12 +1,12 @@
 from processors.procesor import Processor
-from htmlobject import HTMLObject
+from section import Section
 from lxml.etree import _Element
 from queries import xpathqueries
 
 class TableProcessor(Processor):
 
-    def __init__(self, object: HTMLObject):
-        super().__init__(object)
+    def __init__(self, object: Section, section_type: str):
+        super().__init__(object, section_type)
 
     def run(self):
         row_skips = [8,9,15,21,22,26,32,35] # rows that should not be processed

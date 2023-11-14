@@ -1,5 +1,4 @@
 from processors.procesor import Processor
-from htmlobject import HTMLObject
 from section import Section
 from queries import xpathqueries
 from copy import deepcopy
@@ -8,8 +7,8 @@ from processors.attributeprocessor import AttributeProcessor
 
 class SensesProcessor(Processor):
 
-    def __init__(self, object: Section):
-        super().__init__(object)
+    def __init__(self, object: Section, section_type: str):
+        super().__init__(object, section_type)
         self.object: Section
 
     def run(self):
@@ -61,4 +60,8 @@ class SensesProcessor(Processor):
         except Exception as e:
             print('Error in category:', self.object.name)
         finally:
-            return category_obj
+            return {
+            'name': self.object.name,
+            'type': self.section_type,
+            'contents': category_obj,
+        }

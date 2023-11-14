@@ -1,12 +1,15 @@
 from processors.procesor import Processor
-from queries import xpathqueries
 from section import Section
 
 class LanguageProcessor(Processor):
 
-    def __init__(self, object: Section):
-        super().__init__(object)
+    def __init__(self, object: Section, section_type: str):
+        super().__init__(object, section_type)
         self.object: Section
 
     def run(self):
-        self.object.process_subsections()
+        return {
+            'name': self.object.name,
+            'type': self.section_type,
+            'contents': None,
+        }
