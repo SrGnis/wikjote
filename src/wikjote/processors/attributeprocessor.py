@@ -4,7 +4,7 @@ from section import Section
 
 class AttributeProcessor(Processor):
 
-    def __init__(self, object: Section, section_type: str):
+    def __init__(self, object: Section, section_type: None | str = None):
         super().__init__(object, section_type)
 
     def run(self):
