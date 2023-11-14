@@ -12,15 +12,12 @@ class SensesProcessor(Processor):
         self.object: Section
 
     def run(self):
-        category_obj = {}
+        sense_array = []
         try:
-            category_obj['type'] = self.object.name
-            
             #flection = get_flection(section, language)
             #category_obj['flection'] = flection
             
             senses = self.object.find(xpathqueries['senses'])
-            sense_array = []
             for sense in senses:
                 
                 # print(sense.text()) #debug
@@ -54,8 +51,6 @@ class SensesProcessor(Processor):
                 
                 if(sense_obj != None):
                     sense_array.append(deepcopy(sense_obj))
-                
-            category_obj['senses'] = sense_array
             
         except Exception as e:
             print('Error in category:', self.object.name)
@@ -63,5 +58,5 @@ class SensesProcessor(Processor):
             return {
             'name': self.object.name,
             'type': self.section_type,
-            'contents': category_obj,
+            'contents': sense_array,
         }

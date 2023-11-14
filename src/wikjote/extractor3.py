@@ -18,7 +18,7 @@ def process_zim2():
     # print(json.dumps(titles, ensure_ascii=False, indent= 2)) #debug
     
     with open(os.path.join(config.downloads_dir, 'eswiktionary-titles'), encoding='utf8') as f:
-        f = ['flor']
+        f = ['bus']
         for lema in f:
             try:
                 lema = lema.strip()
