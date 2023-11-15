@@ -21,7 +21,11 @@ class Section(HTMLObject):
         print(
             f"Procesing Section {self.name}, type {self.processor.section_type}, with {self.processor.__class__.__name__}"
         )  # debug
-        section_res = self.processor.run()
+        section_res = {
+            "name": self.name,
+            "type": self.processor.section_type,
+            "contents": self.processor.run(),
+        }
         print(f"Procesing Sub Sections {self.name}")  # debug
         section_res["sub_sections"] = self.process_subsections()
 

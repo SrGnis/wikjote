@@ -14,8 +14,4 @@ class TranslationsProcessor(Processor):
             txt = txt.split(":")
             if len(txt) == 2:
                 res[txt[0].strip()] = txt[1].strip()
-        return {
-            "name": self.object.name,
-            "type": self.section_type,
-            "contents": res,
-        }
+        return res

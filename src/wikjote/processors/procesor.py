@@ -6,5 +6,5 @@ class Processor:
         self.object = target_object
         self.section_type = section_type
 
-    def run(self) -> dict:
-        return {}
+    def run(self):
+        return None

@@ -1,8 +1,8 @@
 from copy import deepcopy
+import re
 
 from queries import xpathqueries
 from processors.procesor import Processor
-from processors.attributeprocessor import AttributeProcessor
 
 
 class SensesProcessor(Processor):
@@ -14,26 +14,23 @@ class SensesProcessor(Processor):
 
             senses = self.object.find(xpathqueries["senses"])
             for sense in senses:
-                # print(sense.text()) #debug
-
-                # TODO: senses can have ul to specify attributes, parse those correctly
-                # WRONG: if the sense has ul probably is not a sense
-                # if(len(sense.find('.//ul')) > 0):
-                #     continue
-
                 sense_obj = {}
                 try:
                     head = sense.find_or_fail(xpathqueries["sense_head"])
-                    sense_obj["head"] = head[0].text()  # type: ignore
+                    sense_obj["head"] = head[0].text()
 
                     content = sense.find_or_fail(xpathqueries["sense_content"])
-                    sense_obj["content"] = content[0].text()  # type: ignore
+                    content = content[0].text()  # all the inner text
+                    content = content[: content.find("\n")]  # remove attributes
+                    content = re.sub("\[.*\]", "", content)  # remove refeneces
+                    content = content.strip(" .")
+                    sense_obj["content"] = content
 
                     attributes_section = sense.find(xpathqueries["sense_attributes"])
                     if len(attributes_section) > 0:
-                        sense_obj["attributes"] = AttributeProcessor(
-                            attributes_section[0]
-                        ).run()
+                        attributes = attributes_section[0].parse_attributes()
+                        sense_obj["attributes"] = attributes
+
                 except Exception as exception:
                     print(exception)
                     sense_obj = None
@@ -48,10 +45,6 @@ class SensesProcessor(Processor):
                     sense_array.append(deepcopy(sense_obj))
 
         except Exception:
-            print("Error in category:", self.object.name)
+            print("Error in category")
 
-        return {
-            "name": self.object.name,
-            "type": self.section_type,
-            "contents": sense_array,
-        }
+        return sense_array

@@ -27,14 +27,28 @@ class HTMLObject:
     def text(self) -> str:
         return self.get_all_text(self.root)
 
-    # TODO: static methods?
     def find(self, query: str) -> list[HTMLObject]:
         result: list[HTMLObject] = [HTMLObject(i) for i in self.root.xpath(query)]
         return result
 
-    # TODO: static methods?
     def find_or_fail(self, query: str) -> list[HTMLObject]:
         result = self.find(query)
         if len(result) == 0:
             raise XMLNotFound(query)
         return result
+
+    def parse_attributes(self):
+        # TODO check "Ejemplos" parsing
+        contents = self.find(".//li")
+        res = {}
+        for content in contents:
+            split = content.text().split(":")
+            if len(split) == 2:
+                attr_name = split[0].strip()
+                attr_content = split[1].strip(" .")
+                # TODO content formating should be done elsewere
+                # attr_content = split[1].split(",")
+                # attr_content = [content.strip(" .,") for content in attr_content]
+                res[attr_name] = attr_content
+
+        return res

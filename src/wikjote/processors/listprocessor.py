@@ -1,3 +1,4 @@
+import re
 from processors.procesor import Processor
 from htmlobject import HTMLObject
 
@@ -7,9 +8,8 @@ class ListProcessor(Processor):
         contents = self.object.find(".//li")
         res = []
         for content in contents:
-            res.append(HTMLObject.get_all_text(content).strip())
-        return {
-            "name": self.object.name,
-            "type": self.section_type,
-            "contents": res,
-        }
+            text = HTMLObject.get_all_text(content)
+            text = re.sub("\[.*\]", "", text)
+            text = text.strip(" .")
+            res.append(text)
+        return res

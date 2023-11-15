@@ -70,6 +70,7 @@ def register_rules():
     ProcessorAssignator.add_rule(
         XPathRule(xpathqueries["language_section_rule"], LanguageProcessor, "languaje")
     )
+    ProcessorAssignator.add_rule(NameRule("Forma verbal", SensesProcessor, "verb_form"))
     ProcessorAssignator.add_rule(
         XPathRule(xpathqueries["sense_section_rule"], SensesProcessor, "senses")
     )
