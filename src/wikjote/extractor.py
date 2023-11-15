@@ -22,9 +22,9 @@ def process_zim():
 
     with open(
         os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
-    ) as f:
-        f = ["flor"]
-        for lema in f:
+    ) as lemas:
+        lemas = ["flor"]
+        for lema in lemas:
             try:
                 lema = lema.strip()
                 entry = zim.get_entry_by_path(lema)
