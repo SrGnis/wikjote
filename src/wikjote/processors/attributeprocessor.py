@@ -21,10 +21,6 @@ class AttributeProcessor(Processor):
                     attr_content = [content.strip() for content in attr_content]
                 res[attr_name] = attr_content
                 
-        return {
-            'name': self.object.name,
-            'type': self.section_type,
-            'contents': res,
-        }
+        return res
     
         
