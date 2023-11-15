@@ -1,13 +1,13 @@
 import json
 
 from htmlobject import HTMLObject
-from lxml.etree import _Element
+from lxml.etree import ElementBase
 import queries
 from rules.assignator import ProcessorAssignator
 
 
 class Section(HTMLObject):
-    def __init__(self, root: _Element) -> None:
+    def __init__(self, root: ElementBase) -> None:
         super().__init__(root)
         root_obj = HTMLObject(root)
         self.name: str = self.get_section_name(root_obj)

@@ -2,11 +2,9 @@ from htmlobject import HTMLObject
 
 class Processor:
 
-    def __init__(self, object: HTMLObject, section_type: None | str = None):
-        self.object = object
+    def __init__(self, target_object: HTMLObject, section_type: None | str = None):
+        self.object = target_object
         self.section_type = section_type
 
-        """ Returns a dict whit the name of the section and the contents
-        """
     def run(self) -> dict:
         pass

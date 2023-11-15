@@ -1,19 +1,19 @@
 from __future__ import annotations
-from lxml.etree import _Element
+from lxml.etree import ElementBase
 from exceptions import XMLNotFound
 
 
 class HTMLObject:
-    def __init__(self, root: _Element) -> None:
+    def __init__(self, root: ElementBase) -> None:
         self.root = root
 
     @staticmethod
     def get_all_text(
-        element: _Element
+        element: ElementBase
         | HTMLObject
-        | list[_Element]
+        | list[ElementBase]
         | list[HTMLObject]
-        | list[HTMLObject | _Element],
+        | list[HTMLObject | ElementBase],
     ) -> str:
         if not isinstance(element, list):
             element = [element]

@@ -1,11 +1,11 @@
 import json
 from htmlobject import HTMLObject
-from lxml.etree import _Element
+from lxml.etree import ElementBase
 from section import Section
 
 
 class Page(HTMLObject):
-    def __init__(self, root: _Element, lema: str) -> None:
+    def __init__(self, root: ElementBase, lema: str) -> None:
         super().__init__(root)
         self.lema: str = lema
         root_obj = HTMLObject(root)

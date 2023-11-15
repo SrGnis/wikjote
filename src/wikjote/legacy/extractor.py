@@ -3,7 +3,7 @@ import os
 import config
 from exceptions import XMLNotFound
 from lxml import etree
-from lxml.etree import _Element
+from lxml.etree import ElementBase
 from queries import xpathqueries
 from libzim.reader import Archive
 import traceback
@@ -30,15 +30,15 @@ non_senses = [
 cat_procesed = {}
 
 
-def find_or_fail(html: _Element, query: str):
+def find_or_fail(html: ElementBase, query: str):
     result = find(html, query)
     if len(result) == 0:
         raise XMLNotFound(query)
     return result
 
 
-def find(html: _Element, query: str):
-    result: list[_Element] = html.xpath(query)
+def find(html: ElementBase, query: str):
+    result: list[ElementBase] = html.xpath(query)
     return result
 
 
@@ -56,7 +56,7 @@ def process_zim2():
                 lema = lema.strip()
                 entry = zim.get_entry_by_path(lema)
                 entry_content = bytes(entry.get_item().content).decode("UTF-8")
-                entry_html: _Element = etree.HTML(entry_content)  # type: ignore
+                entry_html: ElementBase = etree.HTML(entry_content)  # type: ignore
 
                 page = Page(entry_html, lema)
 
@@ -81,7 +81,7 @@ def process_zim():
                 entry = zim.get_entry_by_path(lema)
                 page = bytes(entry.get_item().content).decode("UTF-8")
 
-                html: _Element = etree.HTML(page)  # type: ignore
+                html: ElementBase = etree.HTML(page)  # type: ignore
 
                 if False:  # TODO: use argument for parsing only a specific language
                     languages = find_or_fail(
@@ -264,7 +264,7 @@ def get_flection(category, es_section):
             for col_index in range(len(row_children)):
                 target = get_dict_level(flection_obj, target_level)
                 if True:
-                    element: _Element = row_children[col_index]
+                    element: ElementBase = row_children[col_index]
 
                     if element.tag == "th":
                         row_has_th = True
@@ -292,7 +292,7 @@ def get_flection(category, es_section):
 
 
 # TODO: rowspan CAUTION colspan should be normalized before normalizing rowspans
-def normalize_rows(rows: list[_Element], row_skips: list[int], sublevels: dict):
+def normalize_rows(rows: list[ElementBase], row_skips: list[int], sublevels: dict):
     last_sublevel = None
     num_cols = len(find(rows[0], "./*[self::th | self::td]")) + sum(
         int(e.get("colspan", "1")) - 1 for e in find(rows[0], "./*[@colspan]")
@@ -329,7 +329,7 @@ def normalize_rows(rows: list[_Element], row_skips: list[int], sublevels: dict):
     return num_cols
 
 
-def get_all_text(element: _Element) -> str:
+def get_all_text(element: ElementBase) -> str:
     return "".join(element.itertext())  # type: ignore
 
 

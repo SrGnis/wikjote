@@ -99,6 +99,8 @@ disable=
     ; attribute-defined-outside-init,
     ; invalid-name,
     missing-docstring,
+    no-name-in-module,
+    import-error,
     ; protected-access,
     ; too-few-public-methods,
     ; # handled by black

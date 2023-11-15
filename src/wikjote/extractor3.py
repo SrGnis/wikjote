@@ -4,7 +4,7 @@ import traceback
 
 import config
 from lxml import etree
-from lxml.etree import _Element
+from lxml.etree import ElementBase
 from libzim.reader import Archive
 from page import Page
 
@@ -28,7 +28,7 @@ def process_zim2():
                 lema = lema.strip()
                 entry = zim.get_entry_by_path(lema)
                 entry_content = bytes(entry.get_item().content).decode("UTF-8")
-                entry_html: _Element = etree.HTML(entry_content)  # type: ignore
+                entry_html: ElementBase = etree.HTML(entry_content)  # type: ignore
 
                 page = Page(entry_html, lema)
 
