@@ -3,13 +3,14 @@ import os
 import traceback
 
 import config
+from page import Page
+
 from lxml import etree
 from lxml.etree import ElementBase
 from libzim.reader import Archive
-from page import Page
 
 
-def process_zim2():
+def process_zim():
     print("Processing zim")
 
     zim = Archive(config.zimfile)

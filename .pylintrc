@@ -96,15 +96,16 @@ enable=
 # --disable=W"
 
 disable=
-    ; attribute-defined-outside-init,
-    ; invalid-name,
     missing-docstring,
     no-name-in-module,
     import-error,
+    anomalous-backslash-in-string,
+    format,
+    ; attribute-defined-outside-init,
+    ; invalid-name,
     ; protected-access,
     ; too-few-public-methods,
     ; # handled by black
-    ; format,
     ; # We anticipate #3512 where it will become optional
     ; fixme,
     ; cyclic-import,

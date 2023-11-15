@@ -3,5 +3,5 @@ class AssignationRule:
         self.processor = processor
         self.type = section_type
 
-    def evaluate(self, section: "Section") -> bool:
+    def evaluate(self, section: "Section") -> bool:  # type: ignore
         return False

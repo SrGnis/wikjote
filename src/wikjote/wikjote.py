@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from extractor3 import process_zim2
+from extractor import process_zim
 import config
 from utils import osutils, netutils
 from queries import xpathqueries
@@ -85,4 +85,4 @@ if __name__ == "__main__":
     if not arguments.no_download and arguments.zim_path is None:
         download_zim(arguments)
 
-    process_zim2()
+    process_zim()
