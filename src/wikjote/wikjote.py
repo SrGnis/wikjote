@@ -15,6 +15,7 @@ from processors.listprocessor import ListProcessor
 from processors.translationsprocessor import TranslationsProcessor
 from processors.sensesprocessor import SensesProcessor
 from processors.languageprocessor import LanguageProcessor
+from processors.tableprocessor import TableProcessor
 
 
 def parse_args():
@@ -74,6 +75,7 @@ def register_rules():
     ProcessorAssignator.add_rule(
         XPathRule(xpathqueries["sense_section_rule"], SensesProcessor, "senses")
     )
+    ProcessorAssignator.add_rule(NameRule("Conjugación", TableProcessor, "conjugation"))
 
 
 if __name__ == "__main__":

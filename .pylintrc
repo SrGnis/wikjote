@@ -101,6 +101,7 @@ disable=
     import-error,
     anomalous-backslash-in-string,
     format,
+    consider-using-enumerate,
     ; attribute-defined-outside-init,
     ; invalid-name,
     ; protected-access,

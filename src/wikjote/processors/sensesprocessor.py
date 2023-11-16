@@ -3,14 +3,16 @@ import re
 
 from queries import xpathqueries
 from processors.procesor import Processor
+from utils.tableparser import parse_table
 
 
 class SensesProcessor(Processor):
     def run(self):
-        sense_array = []
+        res = {}
         try:
+            sense_array = []
             # flection = get_flection(section, language)
-            # category_obj['flection'] = flection
+            inflection = parse_table(self.object.root)
 
             senses = self.object.find(xpathqueries["senses"])
             for sense in senses:
@@ -22,7 +24,7 @@ class SensesProcessor(Processor):
                     content = sense.find_or_fail(xpathqueries["sense_content"])
                     content = content[0].text()  # all the inner text
                     content = content[: content.find("\n")]  # remove attributes
-                    content = re.sub("\[.*\]", "", content)  # remove refeneces
+                    content = re.sub(r"\[.*\]", "", content)  # remove refeneces
                     content = content.strip(" .")
                     sense_obj["content"] = content
 
@@ -44,7 +46,10 @@ class SensesProcessor(Processor):
                 if sense_obj is not None:
                     sense_array.append(deepcopy(sense_obj))
 
+            res["senses"] = sense_array
+            res["inflection"] = inflection
+
         except Exception:
             print("Error in category")
 
-        return sense_array
+        return res
