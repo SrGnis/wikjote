@@ -1,10 +1,12 @@
+from typing import Any
+import re
+
 from processors.procesor import Processor
 from section import Section
-import re
 
 
 class TranslationsProcessor(Processor):
-    def run(self):
+    def run(self) -> Any:
         contents = self.object.find(".//li")
         res = {}
         for content in contents:

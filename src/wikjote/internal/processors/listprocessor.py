@@ -1,10 +1,11 @@
+from typing import Any
 import re
 from processors.procesor import Processor
 from htmlobject import HTMLObject
 
 
 class ListProcessor(Processor):
-    def run(self):
+    def run(self) -> Any:
         contents = self.object.find(".//li")
         res = []
         for content in contents:

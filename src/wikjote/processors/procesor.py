@@ -1,3 +1,4 @@
+from typing import Any
 from htmlobject import HTMLObject
 
 
@@ -6,5 +7,5 @@ class Processor:
         self.object = target_object
         self.section_type = section_type
 
-    def run(self):
+    def run(self) -> Any:
         return None

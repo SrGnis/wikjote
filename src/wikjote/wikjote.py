@@ -10,12 +10,12 @@ from rules.assignator import ProcessorAssignator
 from rules.namerule import NameRule
 from rules.xpathrule import XPathRule
 
-from processors.defaultprocessor import DefaultProcessor
-from processors.listprocessor import ListProcessor
-from processors.translationsprocessor import TranslationsProcessor
-from processors.sensesprocessor import SensesProcessor
-from processors.languageprocessor import LanguageProcessor
-from processors.tableprocessor import TableProcessor
+from internal.processors.defaultprocessor import DefaultProcessor
+from internal.processors.listprocessor import ListProcessor
+from internal.processors.translationsprocessor import TranslationsProcessor
+from internal.processors.sensesprocessor import SensesProcessor
+from internal.processors.languageprocessor import LanguageProcessor
+from internal.processors.tableprocessor import TableProcessor
 
 
 def parse_args():
@@ -43,6 +43,9 @@ def init_config(args):
         config.zimfile = os.path.join(config.downloads_dir, "wiktionary_es.zim")
     else:
         config.zimfile = args.zim_path
+
+    # TODO do it in a config file
+    config.default_processor = DefaultProcessor
 
 
 def init_folders():

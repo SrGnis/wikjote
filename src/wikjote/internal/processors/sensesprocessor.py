@@ -1,3 +1,4 @@
+from typing import Any
 from copy import deepcopy
 import re
 
@@ -7,7 +8,7 @@ from utils.tableparser import parse_table
 
 
 class SensesProcessor(Processor):
-    def run(self):
+    def run(self) -> Any:
         res = {}
         try:
             sense_array = []

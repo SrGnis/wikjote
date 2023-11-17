@@ -1,12 +1,12 @@
 from processors.procesor import Processor
-from processors.defaultprocessor import DefaultProcessor
 from rules.assignationrule import AssignationRule
+import config
 
 
 class ProcessorAssignator:
     rules: dict[str, AssignationRule] = {}
 
-    default: Processor = DefaultProcessor  # type: ignore
+    default: type[Processor] = config.default_processor
 
     @staticmethod
     def add_rule(rule: AssignationRule):

@@ -23,7 +23,7 @@ def process_zim():
     with open(
         os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
     ) as lemas:
-        # lemas = ["amigo"]
+        lemas = ["amigo"]
         for lema in lemas:
             try:
                 lema = lema.strip()
