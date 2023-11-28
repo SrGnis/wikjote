@@ -11,33 +11,50 @@ class Section(HTMLObject):
         super().__init__(root)
         root_obj = HTMLObject(root)
         self.name: str = self.get_section_name(root_obj)
-        self.subsections: list[Section] = self.get_inner_sections(root_obj)
+        self.logger.debug('Creating SECTION "%s"', self.name)
         self.set_processor()
+        self.logger.debug('SUBSECTIONS of SECTION "%s"', self.name)
+        self.subsections: list[Section] = self.get_inner_sections(root_obj)
+        self.logger.debug(
+            'SECTION "%s" created, number of SUBSECTIONS %d',
+            self.name,
+            len(self.subsections),
+        )
 
     def set_processor(self):
         self.processor = ProcessorAssignator.assign(self)
+        self.logger.debug(
+            'SECTION "%s" PROCESSOR: "%s" with type "%s"',
+            self.name,
+            self.processor.__class__.__name__,
+            self.processor.section_type,
+        )
 
     def process(self):
-        print(
-            f"Procesing Section {self.name}, type {self.processor.section_type}, with {self.processor.__class__.__name__}"
-        )  # debug
+        self.logger.debug(
+            'PROCESSING SECTION "%s", type "%s", PROCESSOR: "%s"',
+            self.name,
+            self.processor.section_type,
+            self.processor.__class__.__name__,
+        )
         section_res = {
             "name": self.name,
             "type": self.processor.section_type,
             "contents": self.processor.run(),
         }
-        print(f"Procesing Sub Sections {self.name}")  # debug
         section_res["sub_sections"] = self.process_subsections()
+
+        self.logger.debug('SECTION "%s" PROCESSED', self.name)
 
         return section_res
 
     def process_subsections(self):
+        self.logger.debug('PROCESSING SUBSECTIONS of SECTION "%s"', self.name)
         res = []
         for section in self.subsections:
             res.append(section.process())
 
         return res
-        # print(json.dumps(res, ensure_ascii=False, indent= 2)) #debug
 
     @staticmethod
     def get_inner_sections(root_obj: HTMLObject, query: str | None = None):
@@ -48,6 +65,7 @@ class Section(HTMLObject):
 
     @staticmethod
     def get_section_name(root_obj: HTMLObject):
+        # TODO generlalize
         return HTMLObject.get_all_text(
             root_obj.find_or_fail(queries.xpathqueries["section_name"])[0]
         ).strip()

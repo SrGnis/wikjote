@@ -1,3 +1,4 @@
+# TODO refactor
 xpathqueries = {
     "wiktionary_es_download_links": './/a[contains(text(),"wiktionary_es_all_nopic") ]',
     "language_section_chosed": '//h2[@id="{}"]/parent::summary/parent::details',

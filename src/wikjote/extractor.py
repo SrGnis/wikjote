@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import traceback
 
@@ -9,22 +10,25 @@ from lxml import etree
 from lxml.etree import ElementBase
 from libzim.reader import Archive
 
+logger: logging.Logger = logging.getLogger("wikjote")
+
 
 def process_zim():
-    print("Processing zim")
+    logger.info("Starting ZIM processing")
 
     zim = Archive(config.zimfile)
 
     # titles = [entry.title for entry in zim] not implemented yet
-    # titles = [zim._get_entry_by_id(id).title for id in range(zim.all_entry_count)]
-
-    # print(json.dumps(titles, ensure_ascii=False, indent= 2)) #debug
+    # titles = [zim._get_entry_by_id(id).title for id in range(zim.all_entry_count)] TODO: allow using this
 
     with open(
         os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
     ) as lemas:
         lemas = ["amigo"]
+
+        logger.info("%d lemas to process", len(lemas))
         for lema in lemas:
+            logger.debug('Processing: "%s"', lema)
             try:
                 lema = lema.strip()
                 entry = zim.get_entry_by_path(lema)
@@ -33,13 +37,10 @@ def process_zim():
 
                 page = Page(entry_html, lema)
 
-                # print('Page:', page.lema, 'Languajes:', page.sections) #debug
-
                 page.process()
 
             except Exception:
-                print("Error in lema: ", lema)
-                traceback.print_exc()
+                logger.exception('Error processing lema "%s"', lema)
 
 
 def save_page(page_html: str, lema: str):

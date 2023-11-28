@@ -1,5 +1,6 @@
 import os
 import argparse
+import logging
 
 from extractor import process_zim
 import config
@@ -16,6 +17,8 @@ from internal.processors.translationsprocessor import TranslationsProcessor
 from internal.processors.sensesprocessor import SensesProcessor
 from internal.processors.languageprocessor import LanguageProcessor
 from internal.processors.tableprocessor import TableProcessor
+
+logger: logging.Logger = logging.getLogger("wikjote")
 
 
 def parse_args():
@@ -55,6 +58,7 @@ def init_folders():
 
 
 def download_zim(args):
+    logger.info("Downloading zim")
     if args.zim_url is None:
         netutils.download_last_zim(config.zimfile)
     else:
@@ -62,6 +66,7 @@ def download_zim(args):
 
 
 def register_rules():
+    logger.info("Registring rules")
     ProcessorAssignator.add_rule(NameRule("Etimología", DefaultProcessor, "etymology"))
     ProcessorAssignator.add_rule(NameRule("Locuciones", ListProcessor, "idioms"))
     ProcessorAssignator.add_rule(
@@ -79,9 +84,20 @@ def register_rules():
         XPathRule(xpathqueries["sense_section_rule"], SensesProcessor, "senses")
     )
     ProcessorAssignator.add_rule(NameRule("Conjugación", TableProcessor, "conjugation"))
+    logger.info("%d rules registered", len(ProcessorAssignator.rules))
+
+
+def init_logger():
+    ch = logging.StreamHandler()
+
+    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.setLevel(logging.INFO)
 
 
 if __name__ == "__main__":
+    init_logger()
     arguments = parse_args()
     register_rules()
     init_config(arguments)

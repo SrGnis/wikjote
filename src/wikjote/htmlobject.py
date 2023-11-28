@@ -1,9 +1,12 @@
 from __future__ import annotations
+import logging
 from lxml.etree import ElementBase
 from exceptions import XMLNotFound
 
 
 class HTMLObject:
+    logger: logging.Logger = logging.getLogger("wikjote")
+
     def __init__(self, root: ElementBase) -> None:
         self.root = root
 
