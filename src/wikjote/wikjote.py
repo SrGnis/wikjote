@@ -17,6 +17,7 @@ from internal.processors.translationsprocessor import TranslationsProcessor
 from internal.processors.sensesprocessor import SensesProcessor
 from internal.processors.languageprocessor import LanguageProcessor
 from internal.processors.tableprocessor import TableProcessor
+from utils.logformater import IndentFormatter
 
 logger: logging.Logger = logging.getLogger("wikjote")
 
@@ -90,10 +91,10 @@ def register_rules():
 def init_logger():
     ch = logging.StreamHandler()
 
-    formatter = logging.Formatter("%(levelname)s: %(message)s")
+    formatter = IndentFormatter("[%(levelname)-8s]:%(indent)s%(message)s")
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":
