@@ -35,14 +35,19 @@ class SensesProcessor(Processor):
                         sense_obj["attributes"] = attributes
 
                 except Exception as exception:
-                    print(exception)
+                    self.logger.warning(
+                        'Troubles getting senses of "%s" because of "%s"',
+                        self.object.name,
+                        exception,
+                    )
                     sense_obj = None
                     # check if the sense is malformated
                     has_dt = len(sense.find("./dt")) > 0
                     dd = sense.find("./dd")
                     has_dd = len(dd) > 0
                     if has_dd and not has_dt:
-                        sense_array[-1]["content"] += "\n" + dd[0].text()
+                        # sense_array[-1]["content"] += "\n" + dd[0].text()
+                        self.logger.warning("Sense with dd but without dt")
 
                 if sense_obj is not None:
                     sense_array.append(deepcopy(sense_obj))
@@ -50,7 +55,10 @@ class SensesProcessor(Processor):
             res["senses"] = sense_array
             res["inflection"] = inflection
 
+            if len(sense_array) is 0:
+                self.logger.warning('No senses found in "%s"', self.object.name)
+
         except Exception:
-            print("Error in category")
+            self.logger.error('Error getting senses of "%s"', self.object.name)
 
         return res

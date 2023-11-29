@@ -9,6 +9,7 @@ class HTMLObject:
 
     def __init__(self, root: ElementBase) -> None:
         self.root = root
+        self.name = None
 
     @staticmethod
     def get_all_text(

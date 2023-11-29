@@ -89,12 +89,17 @@ def register_rules():
 
 
 def init_logger():
+    logger_level = logging.INFO
+
     ch = logging.StreamHandler()
 
-    formatter = IndentFormatter("[%(levelname)-8s]:%(indent)s%(message)s")
+    if logger_level == logging.DEBUG:
+        formatter = IndentFormatter("[%(levelname)-8s]:%(indent)s%(message)s")
+    else:
+        formatter = logging.Formatter("[%(levelname)-8s]: %(message)s")
     ch.setFormatter(formatter)
     logger.addHandler(ch)
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logger_level)
 
 
 if __name__ == "__main__":
