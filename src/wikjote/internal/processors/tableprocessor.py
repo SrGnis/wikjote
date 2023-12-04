@@ -5,4 +5,9 @@ from utils import tableparser
 
 class TableProcessor(Processor):
     def run(self) -> Any:
-        return tableparser.parse_table(self.object.root)
+        res = {}
+        try:
+            res = tableparser.parse_table(self.object.root)
+        except Exception:
+            self.logger.error('Error getting table in "%s"', self.object.stack_string())
+        return res

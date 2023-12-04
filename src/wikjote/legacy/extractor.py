@@ -184,7 +184,7 @@ def process_senses_section(section, section_name, language, lema):
 
             sense_obj = {}
             try:
-                head = find_or_fail(sense, xpathqueries["sense_head"])
+                head = find_or_fail(sense, xpathqueries["sense_title"])
                 sense_obj["head"] = "".join(head[0].itertext())  # type: ignore
 
                 content = find_or_fail(sense, xpathqueries["sense_content"])

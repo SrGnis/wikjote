@@ -25,12 +25,12 @@ def process_zim():
         os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
     ) as lemas_file:
         lemas = lemas_file.readlines()
-        # lemas = ["+"]
+        # lemas = ["Tea"]
 
         logger.info("%d lemas to process", len(lemas))
         for lema in lemas:
             lema = lema.strip()
-            logger.info('Processing: "%s"', lema)
+            logger.debug('Processing: "%s"', lema)
             try:
                 lema = lema.strip()
                 entry = zim.get_entry_by_path(lema)
@@ -42,7 +42,7 @@ def process_zim():
                 page.process()
 
             except Exception:
-                logger.error('Error processing lema "%s"', lema)
+                logger.exception('Error processing lema "%s"', lema)
 
 
 def save_page(page_html: str, lema: str):

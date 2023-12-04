@@ -7,14 +7,13 @@ from rules.assignator import ProcessorAssignator
 
 
 class Section(HTMLObject):
-    def __init__(self, root: ElementBase) -> None:
-        super().__init__(root)
-        root_obj = HTMLObject(root)
-        self.name: str = self.get_section_name(root_obj)
+    def __init__(self, root: ElementBase, parent: HTMLObject | None = None) -> None:
+        super().__init__(root, parent)
+        self.name: str = self.get_section_name(self)
         self.logger.debug('Creating SECTION "%s"', self.name)
         self.set_processor()
         self.logger.debug('SUBSECTIONS of SECTION "%s"', self.name)
-        self.subsections: list[Section] = self.get_inner_sections(root_obj)
+        self.subsections: list[Section] = self.get_inner_sections(self)
         self.logger.debug(
             'SECTION "%s" created, number of SUBSECTIONS %d',
             self.name,
@@ -61,7 +60,7 @@ class Section(HTMLObject):
         if query is None:
             query = "inner_sections"
         sections = root_obj.find(queries.xpathqueries[query])
-        return [Section(section.root) for section in sections]
+        return [Section(section.root, root_obj) for section in sections]
 
     @staticmethod
     def get_section_name(root_obj: HTMLObject):

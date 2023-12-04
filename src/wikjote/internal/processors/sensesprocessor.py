@@ -12,53 +12,77 @@ class SensesProcessor(Processor):
         res = {}
         try:
             sense_array = []
-            # flection = get_flection(section, language)
-            inflection = parse_table(self.object.root)
+            inflection = None
+            try:
+                inflection = parse_table(self.object.root)
+            except Exception:
+                self.logger.error(
+                    'Error getting flection table in "%s"', self.object.stack_string()
+                )
 
             senses = self.object.find(xpathqueries["senses"])
-            for sense in senses:
+            for index, sense in enumerate(senses):
+                # //details[child::dl]/dl[@id="this"]/following-sibling::ul[count(preceding-sibling::dl)={index}]
                 sense_obj = {}
-                try:
-                    head = sense.find_or_fail(xpathqueries["sense_head"])
-                    sense_obj["head"] = head[0].text()
 
-                    content = sense.find_or_fail(xpathqueries["sense_content"])
-                    content = content[0].text()  # all the inner text
-                    content = content[: content.find("\n")]  # remove attributes
+                sense_obj["title"] = None
+                head = sense.find(xpathqueries["sense_title"])
+                if len(head) > 0:
+                    sense_obj["title"] = head[0].text()
+
+                sense_obj["content"] = None
+                content = sense.find(xpathqueries["sense_content"])
+                if len(content) > 0:
+                    # first process atributes and remove them
+                    sense_obj["attributes"] = {}
+                    attributes_sections = sense.find(xpathqueries["sense_attributes"])
+                    for attribute_section in attributes_sections:
+                        attributes = attribute_section.parse_attributes()
+                        sense_obj["attributes"] = sense_obj["attributes"] | attributes
+                        attribute_section.remove()
+
+                    attributes_sections_wrong = sense.find(
+                        xpathqueries["sense_attributes_wrong"].format(index + 1)
+                    )
+                    for attribute_section in attributes_sections_wrong:
+                        self.logger.warning(
+                            'Malformated attribute corrected in "%s"',
+                            self.object.stack_string(),
+                        )
+                        attributes = attribute_section.parse_attributes()
+                        sense_obj["attributes"] = sense_obj["attributes"] | attributes
+                        attribute_section.remove()
+
+                    content = content[0].text()
                     content = re.sub(r"\[.*\]", "", content)  # remove refeneces
                     content = content.strip(" .")
-                    sense_obj["content"] = content
+                    if content != "":
+                        sense_obj["content"] = content
 
-                    attributes_section = sense.find(xpathqueries["sense_attributes"])
-                    if len(attributes_section) > 0:
-                        attributes = attributes_section[0].parse_attributes()
-                        sense_obj["attributes"] = attributes
-
-                except Exception as exception:
-                    self.logger.warning(
-                        'Troubles getting senses of "%s" because of "%s"',
-                        self.object.name,
-                        exception,
-                    )
-                    sense_obj = None
-                    # check if the sense is malformated
-                    has_dt = len(sense.find("./dt")) > 0
-                    dd = sense.find("./dd")
-                    has_dd = len(dd) > 0
-                    if has_dd and not has_dt:
-                        # sense_array[-1]["content"] += "\n" + dd[0].text()
-                        self.logger.warning("Sense with dd but without dt")
-
-                if sense_obj is not None:
+                if sense_obj is not {}:
                     sense_array.append(deepcopy(sense_obj))
+                    if sense_obj["title"] is None:
+                        self.logger.warning(
+                            'Sense without title in "%s"', self.object.stack_string()
+                        )
+                    if sense_obj["content"] is None:
+                        self.logger.warning(
+                            'Sense without content in "%s"', self.object.stack_string()
+                        )
 
             res["senses"] = sense_array
             res["inflection"] = inflection
 
-            if len(sense_array) is 0:
-                self.logger.warning('No senses found in "%s"', self.object.name)
+            if len(sense_array) == 0:
+                # TODO: show lema and upper sections
+                self.logger.warning(
+                    'No senses found in "%s"', self.object.stack_string()
+                )
 
         except Exception:
-            self.logger.error('Error getting senses of "%s"', self.object.name)
+            # TODO: show lema and upper sections
+            self.logger.exception(
+                'Error getting senses of "%s"', self.object.stack_string()
+            )
 
         return res

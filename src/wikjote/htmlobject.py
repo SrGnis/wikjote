@@ -7,9 +7,10 @@ from exceptions import XMLNotFound
 class HTMLObject:
     logger: logging.Logger = logging.getLogger("wikjote")
 
-    def __init__(self, root: ElementBase) -> None:
+    def __init__(self, root: ElementBase, parent: HTMLObject | None = None) -> None:
         self.root = root
-        self.name = None
+        self.parent = parent
+        self.name: str = "None"
 
     @staticmethod
     def get_all_text(
@@ -56,3 +57,17 @@ class HTMLObject:
                 res[attr_name] = attr_content
 
         return res
+
+    def stack_names(self) -> list[str]:
+        if self.parent is None:
+            return [self.name]
+        else:
+            parent_res = self.parent.stack_names()
+            parent_res.append(self.name)
+            return parent_res
+
+    def stack_string(self) -> str:
+        return " ".join(self.stack_names())
+
+    def remove(self):
+        self.root.getparent().remove(self.root)
