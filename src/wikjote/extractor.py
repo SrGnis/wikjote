@@ -1,10 +1,10 @@
 import json
 import logging
 import os
-import traceback
 
 import config
 from page import Page
+import utils.osutils as osutils
 
 from lxml import etree
 from lxml.etree import ElementBase
@@ -18,35 +18,31 @@ def process_zim():
 
     zim = Archive(config.zimfile)
 
-    # titles = [entry.title for entry in zim] not implemented yet
-    # titles = [zim._get_entry_by_id(id).title for id in range(zim.all_entry_count)] TODO: allow using this
+    res = {}
 
-    with open(
-        os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
-    ) as lemas_file:
-        lemas = lemas_file.readlines()
-        # lemas = ["Tea"]
+    # lemas = ["Tea"] # TODO: allow using a list of lemas as argument
+    # lemas = [entry.title for entry in zim] not implemented yet
+    lemas = [zim._get_entry_by_id(id).title for id in range(zim.all_entry_count)]
 
-        logger.info("%d lemas to process", len(lemas))
-        for lema in lemas:
+    logger.info("%d lemas to process", len(lemas))
+    for lema in lemas:
+        lema = lema.strip()
+        logger.debug('Processing: "%s"', lema)
+        try:
             lema = lema.strip()
-            logger.debug('Processing: "%s"', lema)
-            try:
-                lema = lema.strip()
-                entry = zim.get_entry_by_path(lema)
-                entry_content = bytes(entry.get_item().content).decode("UTF-8")
-                entry_html: ElementBase = etree.HTML(entry_content)  # type: ignore
+            entry = zim.get_entry_by_path(lema)
+            entry_content = bytes(entry.get_item().content).decode("UTF-8")
+            entry_html: ElementBase = etree.HTML(entry_content)  # type: ignore
 
-                page = Page(entry_html, lema)
+            page = Page(entry_html, lema)
 
-                page.process()
+            res[lema] = page.process()
 
-            except Exception:
-                logger.exception('Error processing lema "%s"', lema)
+        except Exception as exeption:
+            logger.error('Error processing lema "%s": %s', lema, exeption)
+
+    osutils.write_json(os.path.join(config.working_dir, "eswiktionary.json"), res)
 
 
 def save_page(page_html: str, lema: str):
-    with open(
-        os.path.join(config.working_dir, lema + ".html"), "w", encoding="UTF-8"
-    ) as file:
-        file.write(page_html)
+    osutils.write_file(os.path.join(config.working_dir, lema + ".html"), page_html)

@@ -26,4 +26,4 @@ class Page(HTMLObject):
         for section in self.sections:
             res.append(section.process())
 
-        # print(json.dumps(res, ensure_ascii=False, indent=2))  # debug
+        return res

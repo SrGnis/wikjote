@@ -89,7 +89,7 @@ def register_rules():
 
 
 def init_logger():
-    logger_level = logging.INFO
+    logger_level = logging.INFO  # TODO: set this as an argument
 
     ch = logging.StreamHandler()
 
