@@ -74,13 +74,11 @@ class SensesProcessor(Processor):
             res["inflection"] = inflection
 
             if len(sense_array) == 0:
-                # TODO: show lema and upper sections
                 self.logger.warning(
                     'No senses found in "%s"', self.object.stack_string()
                 )
 
         except Exception:
-            # TODO: show lema and upper sections
             self.logger.exception(
                 'Error getting senses of "%s"', self.object.stack_string()
             )

@@ -13,7 +13,6 @@ logger: logging.Logger = logging.getLogger("wikjote")
 def download_last_zim(destination: str):
     logger.info("Getting last zim url")
     # TODO: add mirrors
-    # TODO: download titles from https://dumps.wikimedia.org/other/pagetitles/
     url = "https://download.kiwix.org/zim/wiktionary/"
     response = requests.get(url, timeout=10)
     if response.status_code != 200:

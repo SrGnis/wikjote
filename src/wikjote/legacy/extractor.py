@@ -83,7 +83,7 @@ def process_zim():
 
                 html: ElementBase = etree.HTML(page)  # type: ignore
 
-                if False:  # TODO: use argument for parsing only a specific language
+                if False:
                     languages = find_or_fail(
                         html, xpathqueries["language_section_chosed"].format("Español")
                     )
@@ -212,7 +212,6 @@ def process_senses_section(section, section_name, language, lema):
         return category_obj
 
 
-# TODO: non specific function
 def get_flection(category, es_section):
     row_skips = [8, 9, 15, 21, 22, 26, 32, 35]  # rows that should not be processed
     sublevels = {
@@ -291,7 +290,6 @@ def get_flection(category, es_section):
     return flection_obj
 
 
-# TODO: rowspan CAUTION colspan should be normalized before normalizing rowspans
 def normalize_rows(rows: list[ElementBase], row_skips: list[int], sublevels: dict):
     last_sublevel = None
     num_cols = len(find(rows[0], "./*[self::th | self::td]")) + sum(
@@ -305,7 +303,7 @@ def normalize_rows(rows: list[ElementBase], row_skips: list[int], sublevels: dic
             if len(with_colspan) < num_cols and colspan == num_cols:
                 if row_index not in row_skips:
                     row_skips.append(row_index)
-                    # TODO: add sublevels
+
                     sublevels[row_index] = {
                         "name": get_all_text(row).strip(),
                         "clear": True,

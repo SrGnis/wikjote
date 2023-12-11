@@ -24,29 +24,72 @@ logger: logging.Logger = logging.getLogger("wikjote")
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--directory", type=str, default="/tmp")
+    parser.add_argument(
+        "-d",
+        "--directory",
+        type=str,
+        default="/tmp",
+        help="Directory where the downloads and result files will be created",
+    )
+    parser.add_argument(
+        "-n",
+        "--no_download",
+        action="store_true",
+        help="Do not download the zim. If no 'zim_path' is provided it will search the zim in <directory>/downloads/wiktionary_es.zim",
+    )
+
     zimgroup = parser.add_mutually_exclusive_group()
-    parser.add_argument("-n", "--no_download", action="store_true")
-    zimgroup.add_argument("-p", "--zim_path", type=str)
-    zimgroup.add_argument("-u", "--zim_url", type=str)
+    zimgroup.add_argument(
+        "-p", "--zim_path", type=str, help="Specify the path to the zim file"
+    )
+    zimgroup.add_argument(
+        "-u", "--zim_url", type=str, help="Specify the url to download the file"
+    )
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        type=str,
+        choices=[
+            "CRITICAL",
+            "FATAL",
+            "ERROR",
+            "WARN",
+            "WARNING",
+            "INFO",
+            "DEBUG",
+            "NOTSET",
+        ],
+        default="INFO",
+        help="Set the log level",
+    )
+
+    lemas_group = parser.add_mutually_exclusive_group()
+    lemas_group.add_argument("-l", "--lemas", type=str, nargs="+", required=False)
+    lemas_group.add_argument("-lf", "--lemas_file", type=str, required=False)
 
     return parser.parse_args()
 
 
 def init_config(args):
     config.parent_dir = args.directory
-
     if config.parent_dir == "/tmp":
         config.working_dir = os.path.join(config.parent_dir, "wikjote")
     else:
         config.working_dir = config.parent_dir
-
     config.downloads_dir = os.path.join(config.working_dir, "downloads")
 
+    # TODO search zim with different names
     if args.zim_path is None:
         config.zimfile = os.path.join(config.downloads_dir, "wiktionary_es.zim")
     else:
         config.zimfile = args.zim_path
+
+    config.logger_level = args.verbose
+
+    config.lemas = args.lemas
+    if args.lemas_file is not None:
+        config.lemas = config.load_lemas_file(args.lemas_file)
 
     # TODO do it in a config file
     config.default_processor = DefaultProcessor
@@ -59,7 +102,7 @@ def init_folders():
 
 
 def download_zim(args):
-    logger.info("Downloading zim")
+    logger.info("Downloading zim ...")
     if args.zim_url is None:
         netutils.download_last_zim(config.zimfile)
     else:
@@ -67,7 +110,7 @@ def download_zim(args):
 
 
 def register_rules():
-    logger.info("Registring rules")
+    logger.info("Registring rules ...")
     ProcessorAssignator.add_rule(NameRule("Etimología", DefaultProcessor, "etymology"))
     ProcessorAssignator.add_rule(NameRule("Locuciones", ListProcessor, "idioms"))
     ProcessorAssignator.add_rule(
@@ -89,28 +132,28 @@ def register_rules():
 
 
 def init_logger():
-    logger_level = logging.INFO  # TODO: set this as an argument
+    logger.setLevel(config.logger_level)
 
-    ch = logging.StreamHandler()
-
-    if logger_level == logging.DEBUG:
+    log_handler = logging.StreamHandler()
+    if logger.level == logging.DEBUG:
         formatter = IndentFormatter("[%(levelname)-8s]:%(indent)s%(message)s")
     else:
         formatter = logging.Formatter("[%(levelname)-8s]: %(message)s")
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    logger.setLevel(logger_level)
+    log_handler.setFormatter(formatter)
+    logger.addHandler(log_handler)
 
 
 if __name__ == "__main__":
-    init_logger()
     arguments = parse_args()
-    register_rules()
     init_config(arguments)
+    init_logger()
 
     init_folders()
+
+    register_rules()
 
     if not arguments.no_download and arguments.zim_path is None:
         download_zim(arguments)
 
     process_zim()
+    logger.info("DONE")

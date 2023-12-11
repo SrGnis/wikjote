@@ -20,3 +20,19 @@ def write_file(path, contents):
 def write_json(path, obj: object):
     contents = json.dumps(obj, ensure_ascii=False, indent=2)
     write_file(path, contents)
+
+
+def read_list(path):
+    file = open(path)
+    data = file.read().splitlines()
+    file.close()
+
+    return data
+
+
+def read_json(path):
+    file = open(path)
+    data = json.load(file)
+    file.close()
+
+    return data
