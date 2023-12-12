@@ -52,9 +52,6 @@ class HTMLObject:
             if len(split) == 2:
                 attr_name = split[0].strip()
                 attr_content = split[1].strip(" .")
-                # TODO content formating should be done elsewere
-                # attr_content = split[1].split(",")
-                # attr_content = [content.strip(" .,") for content in attr_content]
                 res[attr_name] = attr_content
 
         return res
