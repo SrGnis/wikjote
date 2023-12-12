@@ -5,8 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wikjote"
 version = "0.0.1"
+license = {file = "LICENSE"}
+keywords = ["wiki", "scraper", "zim"]
 authors = [
-  { name="SrGnis", email="gnisms97@gmail.com" },
+  { name="SrGnis", email="srgnis@srgnis.xyz" },
 ]
 description = "A Wikcionario scraper using ZIM files"
 readme = "README.md"
@@ -16,7 +18,15 @@ classifiers = [
     "License :: OSI Approved :: GPL-3.0-only",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "libzim",
+  "lxml"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/SrGnis/wikjote"
+"Source" = "https://github.com/SrGnis/wikjote"
 "Bug Tracker" = "https://github.com/SrGnis/wikjote/issues"
+
+[project.scripts]
+wikjote = "wikjote:main.main"
