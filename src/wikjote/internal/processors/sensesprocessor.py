@@ -2,9 +2,9 @@ from typing import Any
 from copy import deepcopy
 import re
 
-from queries import xpathqueries
-from processors.procesor import Processor
-from utils.tableparser import parse_table
+from wikjote.queries import xpathqueries
+from wikjote.processors.procesor import Processor
+from wikjote.utils.tableparser import parse_table
 
 
 class SensesProcessor(Processor):

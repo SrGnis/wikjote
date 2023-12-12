@@ -1,6 +1,6 @@
 import copy
 import os
-import config
+import wikjote.config as config
 from exceptions import XMLNotFound
 from lxml import etree
 from lxml.etree import ElementBase

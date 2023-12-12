@@ -1,7 +1,8 @@
 from __future__ import annotations
 import logging
 from lxml.etree import ElementBase
-from exceptions import XMLNotFound
+
+from wikjote.exceptions import XMLNotFound
 
 
 class HTMLObject:

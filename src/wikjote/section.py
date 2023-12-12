@@ -1,9 +1,10 @@
 import json
 
-from htmlobject import HTMLObject
 from lxml.etree import ElementBase
-import queries
-from rules.assignator import ProcessorAssignator
+
+from wikjote.htmlobject import HTMLObject
+import wikjote.queries as queries
+from wikjote.rules.assignator import ProcessorAssignator
 
 
 class Section(HTMLObject):

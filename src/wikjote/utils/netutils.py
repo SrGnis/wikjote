@@ -4,8 +4,9 @@ import time
 
 from lxml import etree
 from lxml.etree import ElementBase
-from exceptions import WrongHTTPResponseCode, XMLNotFound
-from queries import xpathqueries
+
+from wikjote.exceptions import WrongHTTPResponseCode, XMLNotFound
+from wikjote.queries import xpathqueries
 
 logger: logging.Logger = logging.getLogger("wikjote")
 

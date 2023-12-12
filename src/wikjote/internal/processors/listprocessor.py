@@ -1,7 +1,8 @@
 from typing import Any
 import re
-from processors.procesor import Processor
-from htmlobject import HTMLObject
+
+from wikjote.processors.procesor import Processor
+from wikjote.htmlobject import HTMLObject
 
 
 class ListProcessor(Processor):

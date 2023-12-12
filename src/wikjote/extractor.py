@@ -2,13 +2,13 @@ import json
 import logging
 import os
 
-import config
-from page import Page
-import utils.osutils as osutils
-
 from lxml import etree
 from lxml.etree import ElementBase
 from libzim.reader import Archive
+
+import wikjote.config as config
+from wikjote.page import Page
+import wikjote.utils.osutils as osutils
 
 logger: logging.Logger = logging.getLogger("wikjote")
 

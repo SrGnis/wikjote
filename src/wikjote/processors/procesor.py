@@ -1,6 +1,7 @@
 import logging
 from typing import Any
-from htmlobject import HTMLObject
+
+from wikjote.htmlobject import HTMLObject
 
 
 class Processor:

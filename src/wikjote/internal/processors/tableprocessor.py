@@ -1,6 +1,7 @@
 from typing import Any
-from processors.procesor import Processor
-from utils import tableparser
+
+from wikjote.processors.procesor import Processor
+from wikjote.utils import tableparser
 
 
 class TableProcessor(Processor):

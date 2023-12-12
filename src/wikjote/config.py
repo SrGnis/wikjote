@@ -1,6 +1,6 @@
-from processors.defaultprocessor import DefaultProcessor
-from processors.procesor import Processor
-import utils.osutils as osutils
+from wikjote.processors.defaultprocessor import DefaultProcessor
+from wikjote.processors.procesor import Processor
+import wikjote.utils.osutils as osutils
 
 parent_dir: str
 working_dir: str

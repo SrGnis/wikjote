@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "wikjote"
 version = "0.0.1"
 license = {file = "LICENSE"}
-keywords = ["wiki", "scraper"]
+keywords = ["wiki", "scraper", "zim"]
 authors = [
   { name="SrGnis", email="srgnis@srgnis.xyz" },
 ]
@@ -29,4 +29,4 @@ dependencies = [
 "Bug Tracker" = "https://github.com/SrGnis/wikjote/issues"
 
 [project.scripts]
-wikjote = "wikjote:main"
+wikjote = "wikjote:main.main"

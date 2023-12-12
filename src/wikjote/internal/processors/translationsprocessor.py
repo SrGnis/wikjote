@@ -1,8 +1,8 @@
 from typing import Any
 import re
 
-from processors.procesor import Processor
-from section import Section
+from wikjote.processors.procesor import Processor
+from wikjote.section import Section
 
 
 class TranslationsProcessor(Processor):

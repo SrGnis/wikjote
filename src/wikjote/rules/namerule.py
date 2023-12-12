@@ -1,5 +1,5 @@
-from rules.assignationrule import AssignationRule
-from section import Section
+from wikjote.rules.assignationrule import AssignationRule
+from wikjote.section import Section
 
 
 class NameRule(AssignationRule):

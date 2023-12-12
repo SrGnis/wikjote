@@ -1,6 +1,6 @@
-from processors.procesor import Processor
-from rules.assignationrule import AssignationRule
-import config
+from wikjote.processors.procesor import Processor
+from wikjote.rules.assignationrule import AssignationRule
+import wikjote.config as config
 
 
 class ProcessorAssignator:

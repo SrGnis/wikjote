@@ -1,5 +1,6 @@
 from typing import Any
-from processors.procesor import Processor
+
+from wikjote.processors.procesor import Processor
 
 
 class LanguageProcessor(Processor):

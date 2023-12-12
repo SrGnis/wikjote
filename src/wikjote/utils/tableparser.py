@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from lxml.etree import ElementBase
 
-from queries import xpathqueries
+from wikjote.queries import xpathqueries
 
 
 def parse_table(root: ElementBase):

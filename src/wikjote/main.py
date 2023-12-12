@@ -2,22 +2,22 @@ import os
 import argparse
 import logging
 
-from extractor import process_zim
-import config
-from utils import osutils, netutils
-from queries import xpathqueries
+from wikjote.extractor import process_zim
+import wikjote.config as config
+from wikjote.utils import osutils, netutils
+from wikjote.queries import xpathqueries
+from wikjote.utils.logformater import IndentFormatter
 
-from rules.assignator import ProcessorAssignator
-from rules.namerule import NameRule
-from rules.xpathrule import XPathRule
+from wikjote.rules.assignator import ProcessorAssignator
+from wikjote.rules.namerule import NameRule
+from wikjote.rules.xpathrule import XPathRule
 
-from internal.processors.defaultprocessor import DefaultProcessor
-from internal.processors.listprocessor import ListProcessor
-from internal.processors.translationsprocessor import TranslationsProcessor
-from internal.processors.sensesprocessor import SensesProcessor
-from internal.processors.languageprocessor import LanguageProcessor
-from internal.processors.tableprocessor import TableProcessor
-from utils.logformater import IndentFormatter
+from wikjote.internal.processors.defaultprocessor import DefaultProcessor
+from wikjote.internal.processors.listprocessor import ListProcessor
+from wikjote.internal.processors.translationsprocessor import TranslationsProcessor
+from wikjote.internal.processors.sensesprocessor import SensesProcessor
+from wikjote.internal.processors.languageprocessor import LanguageProcessor
+from wikjote.internal.processors.tableprocessor import TableProcessor
 
 logger: logging.Logger = logging.getLogger("wikjote")
 
@@ -128,6 +128,7 @@ def register_rules():
         XPathRule(xpathqueries["sense_section_rule"], SensesProcessor, "senses")
     )
     ProcessorAssignator.add_rule(NameRule("Conjugación", TableProcessor, "conjugation"))
+
     logger.info("%d rules registered", len(ProcessorAssignator.rules))
 
 
@@ -143,7 +144,7 @@ def init_logger():
     logger.addHandler(log_handler)
 
 
-if __name__ == "__main__":
+def main():
     arguments = parse_args()
     init_config(arguments)
     init_logger()
@@ -157,3 +158,7 @@ if __name__ == "__main__":
 
     process_zim()
     logger.info("DONE")
+
+
+if __name__ == "__main__":
+    main()

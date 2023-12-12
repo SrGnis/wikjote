@@ -1,7 +1,7 @@
-import json
-from htmlobject import HTMLObject
 from lxml.etree import ElementBase
-from section import Section
+
+from wikjote.htmlobject import HTMLObject
+from wikjote.section import Section
 
 
 class Page(HTMLObject):
