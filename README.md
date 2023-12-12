@@ -112,7 +112,8 @@ The JSON resulting from the parsing will have the following schema:
 }
 ```
 
-A real example:
+<details>
+  <summary>A real example</summary>
 
 ```json
 {
@@ -476,3 +477,5 @@ A real example:
   ]
 }
 ```
+
+</details>
