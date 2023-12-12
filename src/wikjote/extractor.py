@@ -48,7 +48,3 @@ def process_zim():
     logger.info("Writing output into file")
     osutils.write_json(os.path.join(config.working_dir, "eswiktionary.json"), res)
     logger.info("Writing complete")
-
-
-def save_page(page_html: str, lema: str):
-    osutils.write_file(os.path.join(config.working_dir, lema + ".html"), page_html)
