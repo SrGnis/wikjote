@@ -1,4 +1,5 @@
 # TODO
+- [ ] More documentation
 - [ ] Language filtering in section finding.
 - [ ] Add parsing output procesing with pipelines
 - [ ] Add arguments config file
