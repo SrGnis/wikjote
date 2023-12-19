@@ -6,7 +6,7 @@ import wikjote.config as config
 class ProcessorAssignator:
     rules: dict[str, AssignationRule] = {}
 
-    default: type[Processor] = config.default_processor
+    default: type[Processor] = config.WikjoteConfig.default_processor
 
     @staticmethod
     def add_rule(rule: AssignationRule):
@@ -16,7 +16,7 @@ class ProcessorAssignator:
 
     @staticmethod
     def assign(section: "Section") -> Processor:  # type: ignore
-        res = ProcessorAssignator.default(section)  # type: ignore
+        res = config.WikjoteConfig.default_processor(section)  # type: ignore
         for rule in ProcessorAssignator.rules.values():
             if rule.evaluate(section):
                 res = rule.processor(section, rule.type)

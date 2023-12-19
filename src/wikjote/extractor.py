@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 
@@ -16,12 +15,12 @@ logger: logging.Logger = logging.getLogger("wikjote")
 def process_zim():
     logger.info("Starting ZIM processing")
 
-    zim = Archive(config.zimfile)
+    zim = Archive(config.WikjoteConfig.zimfile)
 
     res = {}
 
-    if config.lemas is not None:
-        lemas = config.lemas
+    if config.WikjoteConfig.lemas is not None:
+        lemas = config.WikjoteConfig.lemas
     else:
         # lemas = [entry.title for entry in zim] not implemented yet
         lemas = [zim._get_entry_by_id(id).title for id in range(zim.all_entry_count)]
@@ -42,9 +41,11 @@ def process_zim():
             res[lema] = page.process()
 
         except Exception as exeption:
-            logger.error('Error processing lema "%s": %s', lema, exeption)
+            logger.exception('Error processing lema "%s": %s', lema, exeption)
 
     logger.info("Processing complete")
     logger.info("Writing output into file")
-    osutils.write_json(os.path.join(config.working_dir, "eswiktionary.json"), res)
+    osutils.write_json(
+        os.path.join(config.WikjoteConfig.working_dir, "eswiktionary.json"), res
+    )
     logger.info("Writing complete")
