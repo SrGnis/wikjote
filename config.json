@@ -1,0 +1,109 @@
+{
+    "lemas": ["gato", "flor", "abrir"],
+    "default_processor":{
+        "module_name": "wikjote.internal.processors.defaultprocessor",
+        "class_name": "DefaultProcessor",
+        "is_file": false
+    },
+    "rules": [
+        {
+            "name": "wiktionary_es_etimology",
+            "type": "NameRule",
+            "args": ["Etimología"],
+            "section_type": "etymology",
+            "processor": {
+                "module_name": "wikjote.internal.processors.defaultprocessor",
+                "class_name": "DefaultProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_idioms",
+            "type": "NameRule",
+            "args": ["Locuciones"],
+            "section_type": "idioms",
+            "processor": {
+                "module_name": "wikjote.internal.processors.listprocessor",
+                "class_name": "ListProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_add_info",
+            "type": "NameRule",
+            "args": ["Información adicional"],
+            "section_type": "additional_info",
+            "processor": {
+                "module_name": "wikjote.internal.processors.listprocessor",
+                "class_name": "ListProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_see_more",
+            "type": "NameRule",
+            "args": ["Véase también"],
+            "section_type": "see_more",
+            "processor": {
+                "module_name": "wikjote.internal.processors.listprocessor",
+                "class_name": "ListProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_translations",
+            "type": "NameRule",
+            "args": ["Traducciones"],
+            "section_type": "translations",
+            "processor": {
+                "module_name": "wikjote.internal.processors.translationsprocessor",
+                "class_name": "TranslationsProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_languaje",
+            "type": "XPathRule",
+            "args": ["./descendant::*[@class='headline-lang']"],
+            "section_type": "languaje",
+            "processor": {
+                "module_name": "wikjote.internal.processors.languageprocessor",
+                "class_name": "LanguageProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_verb_form",
+            "type": "NameRule",
+            "args": ["Forma verbal"],
+            "section_type": "verb_form",
+            "processor": {
+                "module_name": "wikjote.internal.processors.sensesprocessor",
+                "class_name": "SensesProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_senses",
+            "type": "XPathRule",
+            "args": ["./child::dl"],
+            "section_type": "senses",
+            "processor": {
+                "module_name": "wikjote.internal.processors.sensesprocessor",
+                "class_name": "SensesProcessor",
+                "is_file": false
+            }
+        },
+        {
+            "name": "wiktionary_es_conjugation",
+            "type": "NameRule",
+            "args": ["Conjugación"],
+            "section_type": "conjugation",
+            "processor": {
+                "module_name": "wikjote.internal.processors.tableprocessor",
+                "class_name": "TableProcessor",
+                "is_file": false
+            }
+        }
+    ]
+}

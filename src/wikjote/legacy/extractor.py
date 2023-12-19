@@ -45,10 +45,11 @@ def find(html: ElementBase, query: str):
 def process_zim2():
     print("Processing zim")
 
-    zim = Archive(config.zimfile)
+    zim = Archive(config.WikjoteConfig.zimfile)
 
     with open(
-        os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
+        os.path.join(config.WikjoteConfig.downloads_dir, "eswiktionary-titles"),
+        encoding="utf8",
     ) as f:
         f = ["flor"]
         for lema in f:
@@ -69,10 +70,11 @@ def process_zim2():
 def process_zim():
     print("Processing zim")
 
-    zim = Archive(config.zimfile)
+    zim = Archive(config.WikjoteConfig.zimfile)
 
     with open(
-        os.path.join(config.downloads_dir, "eswiktionary-titles"), encoding="utf8"
+        os.path.join(config.WikjoteConfig.downloads_dir, "eswiktionary-titles"),
+        encoding="utf8",
     ) as f:
         f = ["ARPU"]
         for lema in f:

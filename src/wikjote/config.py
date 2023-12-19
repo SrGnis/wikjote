@@ -1,14 +1,19 @@
-from wikjote.processors.defaultprocessor import DefaultProcessor
-from wikjote.processors.procesor import Processor
-import wikjote.utils.osutils as osutils
+import pprint
 
-parent_dir: str
-working_dir: str
-downloads_dir: str
-zimfile: str
-default_processor: type[Processor] = DefaultProcessor
-logger_level: str
-lemas: list[str]
+import wikjote.utils.osutils as osutils
+import wikjote.utils.importer as importer
+
+
+class WikjoteConfig:
+    parent_dir: str
+    working_dir: str
+    downloads_dir: str
+    zimfile: str
+    logger_level: str
+    lemas: list[str]
+    rules: list[dict]
+
+    default_processor = None
 
 
 def load_lemas_file(path):
@@ -22,3 +27,19 @@ def load_lemas_file(path):
     except Exception:
         read_lemas = osutils.read_list(path)
         return read_lemas
+
+
+def read_config(path: str):
+    json_config: dict = osutils.read_json(path)
+
+    for key, value in json_config.items():
+        if key == "default_processor":
+            importer.import_module(value["module_name"], value["is_file"])
+            WikjoteConfig.default_processor = importer.get_class(
+                value["module_name"], value["class_name"]
+            )
+        else:
+            setattr(WikjoteConfig, key, value)
+
+    # pp = pprint.PrettyPrinter(indent=2)
+    # pp.pprint(vars(WikjoteConfig))
