@@ -1,6 +1,6 @@
-# TODO
-
 > This should be moved to GitHub issues
+
+# TODO
 
 - [ ] More documentation.
 - [ ] Language filtering in section finding.
@@ -10,3 +10,7 @@
 - [ ] Improve XPath Queries (a XPath query registry?).
 - [ ] Improve zim download options.
 - [ ] Allow html sources more than zims.
+
+# FIX
+
+- [ ] first_sections querry dont get wrong level sections that are not Languajes, e.j. "cazar"
