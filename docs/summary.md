@@ -20,7 +20,7 @@ There are currently three types of rules:
  - RegExRule: Check if any match is found with searching for a regular expression in an attribute in the section.
  - XpathRule: Check if any match is found with xpath search in the html in the section.
 
-The rules are registered in the ProcessorAsignator in the `register_rules()` method of `main.py`, it is planned that this registring be made through a configuration file, also is planned being able to add new **Processors** in said file.
+The rules are registered in the **ProcessorAsignator** in the `register_rules()` method of `main.py` using the rules specified in the config file.
 
 ## Wikjote UML:
 

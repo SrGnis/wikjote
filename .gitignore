@@ -131,4 +131,5 @@ dmypy.json
 # VSCode
 .vscode
 
-tmp
+wikjote_dir
+config.json

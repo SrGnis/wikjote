@@ -23,6 +23,9 @@ dependencies = [
   "lxml"
 ]
 
+[tool.setuptools.package-data]
+"*" = ["*.json"]
+
 [project.urls]
 "Homepage" = "https://github.com/SrGnis/wikjote"
 "Source" = "https://github.com/SrGnis/wikjote"
@@ -30,3 +33,4 @@ dependencies = [
 
 [project.scripts]
 wikjote = "wikjote:main.main"
+wikjote_print_config = "wikjote:main.print_config"
