@@ -54,7 +54,7 @@ class SensesProcessor(Processor):
                         attribute_section.remove()
 
                     content = content[0].text()
-                    content = re.sub(r"\[.*\]", "", content)  # remove refeneces
+                    # content = re.sub(r"\[.*\]", "", content)  # remove refeneces
                     content = content.strip(" .")
                     if content != "":
                         sense_obj["content"] = content

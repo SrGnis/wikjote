@@ -11,7 +11,7 @@ class ListProcessor(Processor):
         res = []
         for content in contents:
             text = HTMLObject.get_all_text(content)
-            text = re.sub(r"\[.*\]", "", text)
+            # text = re.sub(r"\[.*\]", "", text)
             text = text.strip(" .")
             res.append(text)
         return res
