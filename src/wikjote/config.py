@@ -1,3 +1,4 @@
+import importlib.resources
 import pprint
 
 import wikjote.utils.osutils as osutils
@@ -10,10 +11,15 @@ class WikjoteConfig:
     downloads_dir: str
     zimfile: str
     logger_level: str
-    lemas: list[str]
+    lemas: list[str] | None = None
     rules: list[dict]
 
     default_processor = None
+
+
+def print_default_config():
+    file = importlib.resources.open_text("wikjote", "default_config.json")
+    print(file.read())
 
 
 def load_lemas_file(path):
@@ -29,7 +35,7 @@ def load_lemas_file(path):
         return read_lemas
 
 
-def read_config(path: str):
+def read_config(path: str | None):
     json_config: dict = osutils.read_json(path)
 
     for key, value in json_config.items():

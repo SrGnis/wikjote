@@ -12,7 +12,7 @@ The process has two steps:
 1. Wikjote reads de zim file and converts each html page into a simplified json representation.
 2. **NOT IMPLEMENTED YET** The resulting json goes trough a configurable pipeline where the data of each page is corrected, modified and structured.
 
-> The idea is that the conversion and postprocessing can be configured by config files and light python coding without needing to rebuild the package. This is not implemented yet but the conversion configuration **IS BEING WORKED ON**.
+> The idea is that the conversion and postprocessing can be configured by config files and light python coding without needing to rebuild the package. This is not implemented yet but the conversion configuration is done.
 
 ## Installation
 
@@ -20,16 +20,21 @@ The process has two steps:
 git clone https://github.com/SrGnis/wikjote.git
 cd wikjote
 pip install .
+# if you want to edit the code use this instead:
+pip install -e .
 ```
 
 ## Usage
+
+### Basic usage
+
 You can run Wikjote simply by:
 ```bash
 wikjote 
 ```
 It will download the last Spanish Wiktionary ZIM file, process all the pages and dump the result in a json file.
 
-By default the working directory is /tmp/wikjote, you can specify other directory with the `-d` option.
+By default the working directory is ./wikjote_dir, you can specify other directory with the `-d` option.
 
 You can prevent the zim download with the `-n` option, Wikjote will search the zim in "working_dir"/downloads/wiktionary_es.zim ( planed to be more general ) or specify the path to the zim file with `-p`
 
@@ -54,6 +59,97 @@ wikjote -d ./working_dir -l gato casa
 # if the zim is already downloaded
 wikjote -n -d ./working_dir -l gato casa
 ```
+
+### Config file
+
+Wikjote loads a [internal config file](/src/wikjote/default_config.json) where all the important configurations are set.
+
+You can specify your own config file using the `-c` option followed by the config path. And you can get the default config file with the `wikjote_print_config` command.
+
+Example:
+```bash
+wikjote_print_config > my_config.json
+# edit your config file
+wikjote -c my_config.json
+```
+
+The command parameters overwrite the fields of the config file, as an example: the `-l` parameter will overwrite the `"lemas"` field int the config.
+
+<details>
+  <summary>Config Specification</summary>
+
+#### Basic Config
+
+|     field name    |      value     |                                              description                                              | required |
+|:-----------------:|:--------------:|:-----------------------------------------------------------------------------------------------------:|----------|
+| lemas             | array          | A list of lemas to process, overwrited by `-l --lemas`                                                | false    |
+| default_processor | [processor](#processor-config)      | The default processor to use, default=`DefaultProcessor` | true     |
+| rules             | array of [rules](#rule-config) | A list of rules to process each section                                                               | true     |
+
+#### Processor Config
+
+|  field name |  value |                           description                          | required |
+|:-----------:|:------:|:--------------------------------------------------------------:|----------|
+| module_name | string | The module name of the processor or the file path if is a file | true     |
+| class_name  | string | The class of the processor                                     | true     |
+| is_file     | bool   | Specifies if the processor is a module or a file               | true     |
+
+#### Rule Config
+
+|  field name  |   value   |                                                                             description                                                                            | required |
+|:------------:|:---------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------:|----------|
+| name         | string    | A descriptive name of the rule                                                                                                                                     | true     |
+| type         | string    | The type of rule to use: NameRule or XPathRule                                                                                                                     | true     |
+| args         | array     | Arguments supplied to the rule, name of the section in case of a NameRule and a xpath query in case of XPathRule `NOTE: actually only the first argument is used`  | true     |
+| section_type | string    | The type of section that fulfills the rule. The value will be added to the resulting json of the section to identify the section                                   | true     |
+| processor    | processor | The processor that will convert the section                                                                                                                        | true     |
+
+</details>
+
+### Extending Wikjote
+
+You can add/modify the rules and processors of Wikjote to process more sections or change the output of the conversion.
+
+First of all check the inner workings of Wikjote in [this document](/docs/summary.md)
+
+To add a new processor is as easy as create a new class that extends the [Processor](/src/wikjote/processors/procesor.py) class. Just implement the run method and return the data that you want, the return could be anything that can be converted to json.
+
+Example: Processor to extract only the links from a section
+```python
+from typing import Any
+
+from wikjote.processors.procesor import Processor
+
+
+class LinksProcessor(Processor):
+    def run(self) -> Any:
+        links_elements = self.object.find(".//a")
+        links = []
+        for link_element in links_elements:
+            links.append(link_element.root.get("href", None))
+        return links
+
+```
+
+Now we add it to the rules in the config:
+
+```json
+
+{
+    "name": "get_links_rule",
+    "type": "NameRule",
+    "args": ["Refranes"],
+    "section_type": "refranes",
+    "processor": {
+        "module_name": "/path/to/linksprocessor.py",
+        "class_name": "LinksProcessor",
+        "is_file": true
+    }
+}
+
+```
+
+You can also create a package with your processors instead of using single files. 
 
 ## Conversion output
 
@@ -461,7 +557,5 @@ The JSON resulting from the conversion will have the following structure:
 ```
 
 </details>
-
-If you want more information of the inner workings of Wikjote check [this document](/docs/summary.md)
 
 And here is the [TODO list](/TODO.md)

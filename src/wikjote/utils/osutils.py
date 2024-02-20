@@ -1,3 +1,4 @@
+import importlib.resources
 import json
 import os
 import logging
@@ -30,8 +31,12 @@ def read_list(path):
     return data
 
 
-def read_json(path):
-    file = open(path)
+def read_json(path: str | None):
+    if path is None:
+        file = importlib.resources.open_text("wikjote", "default_config.json")
+    else:
+        file = open(path)
+
     data = json.load(file)
     file.close()
 

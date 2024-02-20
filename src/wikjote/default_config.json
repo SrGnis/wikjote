@@ -1,5 +1,4 @@
 {
-    "lemas": ["gato", "flor", "abrir"],
     "default_processor":{
         "module_name": "wikjote.internal.processors.defaultprocessor",
         "class_name": "DefaultProcessor",

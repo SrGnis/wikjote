@@ -21,7 +21,7 @@ def parse_args():
         "-d",
         "--directory",
         type=str,
-        default="/tmp",
+        default="./wikjote_dir",
         help="Directory where the downloads and result files will be created",
     )
     parser.add_argument(
@@ -69,13 +69,11 @@ def parse_args():
 
 
 def init_config(args):
-    config.WikjoteConfig.parent_dir = args.directory
-    if config.WikjoteConfig.parent_dir == "/tmp":
-        config.WikjoteConfig.working_dir = os.path.join(
-            config.WikjoteConfig.parent_dir, "wikjote"
-        )
-    else:
-        config.WikjoteConfig.working_dir = config.WikjoteConfig.parent_dir
+    """Set up the config of the application using the provided args"""
+
+    config.read_config(args.config)
+
+    config.WikjoteConfig.working_dir = args.directory
     config.WikjoteConfig.downloads_dir = os.path.join(
         config.WikjoteConfig.working_dir, "downloads"
     )
@@ -90,16 +88,13 @@ def init_config(args):
 
     config.WikjoteConfig.logger_level = args.verbose
 
-    config.WikjoteConfig.lemas = args.lemas
+    if args.lemas is not None:
+        config.WikjoteConfig.lemas = args.lemas
     if args.lemas_file is not None:
         config.WikjoteConfig.lemas = config.load_lemas_file(args.lemas_file)
 
-    if args.config is not None:
-        config.read_config(args.config)
-
 
 def init_folders():
-    osutils.mkdir_if_not_exists(config.WikjoteConfig.parent_dir)
     osutils.mkdir_if_not_exists(config.WikjoteConfig.working_dir)
     osutils.mkdir_if_not_exists(config.WikjoteConfig.downloads_dir)
 
@@ -147,6 +142,10 @@ def init_logger():
         formatter = logging.Formatter("[%(levelname)-8s]: %(message)s")
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
+
+
+def print_config():
+    config.print_default_config()
 
 
 def main():
