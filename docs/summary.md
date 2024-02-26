@@ -26,7 +26,7 @@ The rules are registered in the **ProcessorAsignator** in the `register_rules()`
 
 ```mermaid
 ---
-title: Wikjote
+title: Wikjote Conversor
 ---
 
 classDiagram

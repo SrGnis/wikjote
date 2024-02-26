@@ -1,6 +1,6 @@
 ```mermaid
 ---
-title: Wikjote
+title: Wikjote Conversor
 ---
 
 classDiagram
@@ -33,8 +33,8 @@ classDiagram
     }
 
     class ProcessorAssignator{
-        - Dict[String,AssignationRule] rules
-        - Dict[String,Processor] name_rules
+        - Dict~String,AssignationRule~ rules
+        - Dict~String,Processor~ name_rules
         
         + assign(Section)
         + remove(AssignationRule)
