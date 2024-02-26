@@ -134,5 +134,5 @@ class IncompatibleHandlersError(BaseException):
         super().__init__(
             f"Tried to append Handlers with incompatible I/O types. \
             {self.new_handler.__class__.__name__} with input types: {self.new_handler.get_input_type()}, \
-            tried to be appended to {self.pre_handler.__class__.__name__} with input types: {self.pre_handler.get_input_type()}"
+            tried to be appended to {self.pre_handler.__class__.__name__} with output type: {self.pre_handler.get_output_type()}"
         )
