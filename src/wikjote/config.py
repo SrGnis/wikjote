@@ -13,6 +13,7 @@ class WikjoteConfig:
     logger_level: str
     lemas: list[str] | None = None
     rules: list[dict]
+    nd_output: bool = False
 
     default_processor = None
 

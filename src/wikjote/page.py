@@ -52,11 +52,11 @@ class Page(HTMLObject):
         """Process the Page and return a list of the dicts that represent the sections.
 
         Returns:
-            list: A list of dicts of sections, see Section.process().
+            list: A dict whit the page lema and list of dicts of sections, see Section.process().
         """
         self.logger.debug('Procesing PAGE "%s"', self.lema)
-        res = []
+        res = {"page": self.lema, "sections": []}
         for section in self.sections:
-            res.append(section.process())
+            res["sections"].append(section.process())
 
         return res

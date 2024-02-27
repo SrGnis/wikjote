@@ -40,7 +40,13 @@ def parse_args():
     )
 
     parser.add_argument(
-        "-c", "--config", type=str, help="Specivy the path to the config file"
+        "-c", "--config", type=str, help="Specify the path to the config file"
+    )
+
+    parser.add_argument(
+        "--nd_output",
+        action="store_true",
+        help="Use new line delimited (NDJSON) as output format",
     )
 
     parser.add_argument(
@@ -72,6 +78,8 @@ def init_config(args):
     """Set up the config of the application using the provided args"""
 
     config.read_config(args.config)
+
+    config.WikjoteConfig.nd_output = args.nd_output
 
     config.WikjoteConfig.working_dir = args.directory
     config.WikjoteConfig.downloads_dir = os.path.join(
