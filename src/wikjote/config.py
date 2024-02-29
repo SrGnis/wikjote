@@ -1,19 +1,22 @@
 import importlib.resources
-import pprint
 
 import wikjote.utils.osutils as osutils
 import wikjote.utils.importer as importer
 
 
 class WikjoteConfig:
-    parent_dir: str
+    command: str
+    logger_level: str
     working_dir: str
     downloads_dir: str
+
     zimfile: str
-    logger_level: str
     lemas: list[str] | None = None
     rules: list[dict]
     nd_output: bool = False
+
+    process_input: str
+    process_output: str
 
     default_processor = None
 
@@ -47,6 +50,3 @@ def read_config(path: str | None):
             )
         else:
             setattr(WikjoteConfig, key, value)
-
-    # pp = pprint.PrettyPrinter(indent=2)
-    # pp.pprint(vars(WikjoteConfig))

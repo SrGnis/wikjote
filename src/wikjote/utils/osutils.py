@@ -18,7 +18,7 @@ def write_file(path, contents):
     out_file.close()
 
 
-def write_json(path, obj: object):
+def write_json(path: str, obj: object):
     contents = json.dumps(obj, ensure_ascii=False, indent=2)
     write_file(path, contents)
 

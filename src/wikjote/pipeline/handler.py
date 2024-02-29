@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Type
 
 
 class Handler:
@@ -25,6 +25,6 @@ class Handler:
         return cls._concurrent
 
     @classmethod
-    def is_compatible(cls, pre_handler: Handler) -> bool:
+    def is_compatible(cls, pre_handler: type[Handler]) -> bool:
 
         return pre_handler.get_output_type() in cls._input_type

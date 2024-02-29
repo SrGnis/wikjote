@@ -15,10 +15,10 @@ class Pipeline:
         }
 
         self._output: Any = None
-        self._handlers: list[Handler] = []
+        self._handlers: list[type[Handler]] = []
         self._running: bool = False
 
-    def add_handler(self, handler: Handler):
+    def add_handler(self, handler: type[Handler]):
         if len(self._handlers) == 0 or handler.is_compatible(self._handlers[-1]):
             self._handlers.append(handler)
         else:
@@ -35,26 +35,23 @@ class Pipeline:
         runnig_workers = self._workers.copy()
         while len(runnig_workers) > 0:
             for worker in self._workers:
-                step = self.workers_step[worker]
-                next_step = step + 1
-
-                if next_step == len(self._handlers):
-                    runnig_workers.remove(worker)
-                    continue
-
-                next_handler = self._handlers[next_step]
-
-                if next_handler.is_concurrent:
-                    self._switch_no_concurrent(next_step)
-
                 if not worker.is_runnig():
-                    worker.join()
                     step = self.workers_step[worker]
                     next_step = step + 1
 
-                    self.workers_step[worker] = next_step
-                    worker.set_handler(self._handlers[next_step])
-                    worker.start()
+                    if next_step == len(self._handlers):
+                        runnig_workers.remove(worker)
+                        continue
+
+                    next_handler = self._handlers[next_step]
+
+                    if next_handler.is_concurrent:
+                        self._switch_no_concurrent(next_step)
+                    else:
+                        worker.join()
+                        self.workers_step[worker] = next_step
+                        worker.set_handler(self._handlers[next_step])
+                        worker.start()
 
         # all the workers are done merge the data
         self._output = self._merge_data()
@@ -128,7 +125,7 @@ class Pipeline:
 
 
 class IncompatibleHandlersError(BaseException):
-    def __init__(self, pre_handler: Handler, new_handler: Handler):
+    def __init__(self, pre_handler: type[Handler], new_handler: type[Handler]):
         self.pre_handler = pre_handler
         self.new_handler = new_handler
         super().__init__(

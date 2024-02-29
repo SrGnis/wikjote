@@ -1,9 +1,12 @@
 import os
 import argparse
 import logging
+import pprint
 
 from wikjote.extractor import process_zim
 import wikjote.config as config
+from wikjote.internal.handlers.structurize_es import StructurizeHandler
+from wikjote.pipeline.pipeline import Pipeline
 from wikjote.utils import osutils, netutils
 from wikjote.utils.logformater import IndentFormatter
 import wikjote.utils.importer as importer
@@ -17,38 +20,7 @@ logger: logging.Logger = logging.getLogger("wikjote")
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--directory",
-        type=str,
-        default="./wikjote_dir",
-        help="Directory where the downloads and result files will be created",
-    )
-    parser.add_argument(
-        "-n",
-        "--no_download",
-        action="store_true",
-        help="Do not download the zim. If no 'zim_path' is provided it will search the zim in <directory>/downloads/wiktionary_es.zim",
-    )
-
-    zimgroup = parser.add_mutually_exclusive_group()
-    zimgroup.add_argument(
-        "-p", "--zim_path", type=str, help="Specify the path to the zim file"
-    )
-    zimgroup.add_argument(
-        "-u", "--zim_url", type=str, help="Specify the url to download the file"
-    )
-
-    parser.add_argument(
-        "-c", "--config", type=str, help="Specify the path to the config file"
-    )
-
-    parser.add_argument(
-        "--nd_output",
-        action="store_true",
-        help="Use new line delimited (NDJSON) as output format",
-    )
-
+    # main arguments
     parser.add_argument(
         "-v",
         "--verbose",
@@ -67,9 +39,72 @@ def parse_args():
         help="Set the log level",
     )
 
-    lemas_group = parser.add_mutually_exclusive_group()
+    parser.add_argument(
+        "-c", "--config", type=str, help="Specify the path to the config file"
+    )
+
+    parser.add_argument(
+        "-d",
+        "--directory",
+        type=str,
+        default="./wikjote_dir",
+        help="Directory where the downloads and result files will be created",
+    )
+
+    # sub commands
+    subparsers = parser.add_subparsers(
+        title="subcommands", description="valid subcommands", dest="command"
+    )
+
+    # convert command
+    convert_parser = subparsers.add_parser(
+        "convert", help="Convert a html source into json"
+    )
+
+    convert_parser.add_argument(
+        "-n",
+        "--no_download",
+        action="store_true",
+        help="Do not download the zim. If no 'zim_path' is provided it will search the zim in <directory>/downloads/wiktionary_es.zim",
+    )
+
+    zimgroup = convert_parser.add_mutually_exclusive_group()
+    zimgroup.add_argument(
+        "-p", "--zim_path", type=str, help="Specify the path to the zim file"
+    )
+    zimgroup.add_argument(
+        "-u", "--zim_url", type=str, help="Specify the url to download the file"
+    )
+
+    convert_parser.add_argument(
+        "--nd_output",
+        action="store_true",
+        help="Use new line delimited (NDJSON) as output format",
+    )
+
+    lemas_group = convert_parser.add_mutually_exclusive_group()
     lemas_group.add_argument("-l", "--lemas", type=str, nargs="+", required=False)
     lemas_group.add_argument("-lf", "--lemas_file", type=str, required=False)
+
+    # process command
+    process_parser = subparsers.add_parser(
+        "process", help="Process json data into other json data"
+    )
+
+    process_parser.add_argument(
+        "-i",
+        "--input",
+        type=str,
+        required=True,
+        help="Path to the input JSON file",
+    )
+
+    process_parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        help="Path to the output JSON file, defaults to <wikjote_dir>/process_output.json",
+    )
 
     return parser.parse_args()
 
@@ -79,27 +114,44 @@ def init_config(args):
 
     config.read_config(args.config)
 
-    config.WikjoteConfig.nd_output = args.nd_output
+    config.WikjoteConfig.command = args.command
+
+    config.WikjoteConfig.logger_level = args.verbose
 
     config.WikjoteConfig.working_dir = args.directory
     config.WikjoteConfig.downloads_dir = os.path.join(
         config.WikjoteConfig.working_dir, "downloads"
     )
 
-    # TODO search zim with different names
-    if args.zim_path is None:
-        config.WikjoteConfig.zimfile = os.path.join(
-            config.WikjoteConfig.downloads_dir, "wiktionary_es.zim"
-        )
-    else:
-        config.WikjoteConfig.zimfile = args.zim_path
+    # convert config
+    if args.command == "convert":
 
-    config.WikjoteConfig.logger_level = args.verbose
+        config.WikjoteConfig.nd_output = args.nd_output
 
-    if args.lemas is not None:
-        config.WikjoteConfig.lemas = args.lemas
-    if args.lemas_file is not None:
-        config.WikjoteConfig.lemas = config.load_lemas_file(args.lemas_file)
+        # TODO search zim with different names
+        if args.zim_path is None:
+            config.WikjoteConfig.zimfile = os.path.join(
+                config.WikjoteConfig.downloads_dir, "wiktionary_es.zim"
+            )
+        else:
+            config.WikjoteConfig.zimfile = args.zim_path
+
+        if args.lemas is not None:
+            config.WikjoteConfig.lemas = args.lemas
+        if args.lemas_file is not None:
+            config.WikjoteConfig.lemas = config.load_lemas_file(args.lemas_file)
+
+    # process config
+    if args.command == "process":
+
+        config.WikjoteConfig.process_input = args.input
+
+        if args.output is None:
+            config.WikjoteConfig.process_output = os.path.join(
+                config.WikjoteConfig.working_dir, "process_output.json"
+            )
+        else:
+            config.WikjoteConfig.process_output = args.output
 
 
 def init_folders():
@@ -160,15 +212,29 @@ def main():
     arguments = parse_args()
     init_config(arguments)
     init_logger()
-
     init_folders()
 
-    register_rules()
+    if config.WikjoteConfig.command == "convert":
+        register_rules()
 
-    if not arguments.no_download and arguments.zim_path is None:
-        download_zim(arguments)
+        if not arguments.no_download and arguments.zim_path is None:
+            download_zim(arguments)
 
-    process_zim()
+        process_zim()
+
+    if config.WikjoteConfig.command == "process":
+        # load inputfile
+        data = osutils.read_json(config.WikjoteConfig.process_input)
+        # set up pipeline
+        process_pipe = Pipeline(data, 1)
+        process_pipe.add_handler(StructurizeHandler)
+        # process
+        process_pipe.start()
+        # write output
+        osutils.write_json(
+            config.WikjoteConfig.process_output, process_pipe.get_output()
+        )
+
     logger.info("DONE")
 
 
