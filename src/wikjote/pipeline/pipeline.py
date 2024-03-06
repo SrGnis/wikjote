@@ -16,10 +16,10 @@ class Pipeline:
 
         self._output: Any = None
         self._handlers: list[type[Handler]] = []
-        self._handlers_args: list[dict] = []
+        self._handlers_args: list[dict[str, Any]] = []
         self._running: bool = False
 
-    def add_handler(self, handler: type[Handler], arguments: dict):
+    def add_handler(self, handler: type[Handler], arguments: dict[str, Any]):
         if len(self._handlers) == 0 or handler.is_compatible(self._handlers[-1]):
             self._handlers.append(handler)
             self._handlers_args.append(arguments)
