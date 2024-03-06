@@ -28,5 +28,5 @@ def import_module(name: str, is_file: bool = False):
             exit(1)
 
 
-def get_class(module: str, class_name: str):
+def get_class(module: str, class_name: str) -> type:
     return getattr(runtime_modules[module], class_name)

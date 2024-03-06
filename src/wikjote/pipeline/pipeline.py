@@ -35,7 +35,7 @@ class Pipeline:
         runnig_workers = self._workers.copy()
         while len(runnig_workers) > 0:
             for worker in self._workers:
-                if not worker.is_runnig():
+                if worker in runnig_workers and not worker.is_runnig():
                     step = self.workers_step[worker]
                     next_step = step + 1
 
@@ -45,7 +45,7 @@ class Pipeline:
 
                     next_handler = self._handlers[next_step]
 
-                    if next_handler.is_concurrent:
+                    if not next_handler.is_concurrent:
                         self._switch_no_concurrent(next_step)
                     else:
                         worker.join()

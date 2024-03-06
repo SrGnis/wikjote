@@ -11,6 +11,7 @@
 - [ ] YAML config.
 - [ ] Improve zim download options.
 - [ ] Allow html sources more than zims.
+- [ ] Refactor class names
 
 # FIX
 

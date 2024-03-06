@@ -106,6 +106,14 @@ def parse_args():
         help="Path to the output JSON file, defaults to <wikjote_dir>/process_output.json",
     )
 
+    process_parser.add_argument(
+        "-w",
+        "--workers",
+        type=int,
+        default=1,
+        help="Number of workers of the processing pipeline.",
+    )
+
     return parser.parse_args()
 
 
@@ -153,6 +161,8 @@ def init_config(args):
         else:
             config.WikjoteConfig.process_output = args.output
 
+        config.WikjoteConfig.process_workers_num = args.workers
+
 
 def init_folders():
     osutils.mkdir_if_not_exists(config.WikjoteConfig.working_dir)
@@ -192,14 +202,36 @@ def register_rules():
     logger.info("%d rules registered", len(ProcessorAssignator.rules))
 
 
+def build_pipeline() -> Pipeline:
+    logger.info("Building pipeline ...")
+
+    data = osutils.read_json(config.WikjoteConfig.process_input)
+
+    process_pipe = Pipeline(data, config.WikjoteConfig.process_workers_num)
+
+    for handler_conf in config.WikjoteConfig.pipeline:
+
+        handler_info = handler_conf["handler"]
+        importer.import_module(handler_info["module_name"], handler_info["is_file"])
+        handler = importer.get_class(
+            handler_info["module_name"], handler_info["class_name"]
+        )
+
+        process_pipe.add_handler(handler)
+
+    return process_pipe
+
+
 def init_logger():
     logger.setLevel(config.WikjoteConfig.logger_level)
 
     log_handler = logging.StreamHandler()
     if logger.level == logging.DEBUG:
-        formatter = IndentFormatter("[%(levelname)-8s]:%(indent)s%(message)s")
+        formatter = IndentFormatter(
+            "[%(levelname)-8s][%(threadName)s]:%(indent)s%(message)s"
+        )
     else:
-        formatter = logging.Formatter("[%(levelname)-8s]: %(message)s")
+        formatter = logging.Formatter("[%(levelname)-8s][%(threadName)s]: %(message)s")
     log_handler.setFormatter(formatter)
     logger.addHandler(log_handler)
 
@@ -223,17 +255,10 @@ def main():
         process_zim()
 
     if config.WikjoteConfig.command == "process":
-        # load inputfile
-        data = osutils.read_json(config.WikjoteConfig.process_input)
-        # set up pipeline
-        process_pipe = Pipeline(data, 1)
-        process_pipe.add_handler(StructurizeHandler)
-        # process
-        process_pipe.start()
+        pipeline = build_pipeline()
+        pipeline.start()
         # write output
-        osutils.write_json(
-            config.WikjoteConfig.process_output, process_pipe.get_output()
-        )
+        osutils.write_json(config.WikjoteConfig.process_output, pipeline.get_output())
 
     logger.info("DONE")
 

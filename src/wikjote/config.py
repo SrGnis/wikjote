@@ -17,6 +17,8 @@ class WikjoteConfig:
 
     process_input: str
     process_output: str
+    process_workers_num: int
+    pipeline: list[dict]
 
     default_processor = None
 

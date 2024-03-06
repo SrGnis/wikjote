@@ -104,5 +104,14 @@
                 "is_file": false
             }
         }
+    ],
+    "pipeline": [
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.structurize_es",
+                "class_name": "StructurizeHandler",
+                "is_file": false
+            }
+        }
     ]
 }

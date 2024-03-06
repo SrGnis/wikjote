@@ -13,7 +13,6 @@ class StructurizeHandler(Handler):
 
     @classmethod
     def process(cls, data: list[dict]) -> list[dict]:
-
         # main
         result = []
 
@@ -46,8 +45,10 @@ class StructurizeHandler(Handler):
                 case "senses":
                     cls.process_senses(sub_section, word_obj)
                 case "idioms":
+                    # TODO this
                     pass
                 case "translations":
+                    # TODO this
                     pass
                 case _:
                     cls.logger.warning(
@@ -96,8 +97,8 @@ class StructurizeHandler(Handler):
                 {
                     "etimology": last_etymology,
                     "meaning": meaning["content"],
-                    # TODO singular
-                    # TODO use a mach and case
+                    # TODO singular and singular keys
+                    # TODO use a mach and case?
                     # TODO Ambito Uso and others
                     "synonyms": meaning["attributes"].get("Sinónimos"),
                     "hiponyms": meaning["attributes"].get("Hipónimos"),

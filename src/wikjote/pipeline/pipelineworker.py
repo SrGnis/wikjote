@@ -12,7 +12,7 @@ class PipelineWorker:
         self._thread: Thread | None = None
 
     def start(self):
-        self._thread = Thread(target=self.run())
+        self._thread = Thread(target=self.run)
         self._thread.start()
 
     def join(self):
