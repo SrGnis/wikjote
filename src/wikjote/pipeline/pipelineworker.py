@@ -8,7 +8,7 @@ from wikjote.pipeline.handler import Handler
 class PipelineWorker:
     def __init__(self):
         self._data: Any
-        self._current_handler: type[Handler]
+        self._current_handler: Handler
         self._thread: Thread | None = None
 
     def start(self):
@@ -33,7 +33,7 @@ class PipelineWorker:
     def get_data(self) -> Any:
         return self._data
 
-    def set_handler(self, handler: type[Handler]):
+    def set_handler(self, handler: Handler):
         if not self.is_runnig():
             self._current_handler = handler
         # else throw exeption?

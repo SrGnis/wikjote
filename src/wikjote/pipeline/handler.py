@@ -8,8 +8,11 @@ class Handler:
     _output_type: type
     _concurrent: bool
 
-    @staticmethod
-    def process(data: Any) -> Any:
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def process(self, data: Any) -> Any:
         pass
 
     @classmethod
@@ -26,5 +29,4 @@ class Handler:
 
     @classmethod
     def is_compatible(cls, pre_handler: type[Handler]) -> bool:
-
         return pre_handler.get_output_type() in cls._input_type

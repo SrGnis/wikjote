@@ -11,8 +11,8 @@ class StructurizeHandler(Handler):
     _concurrent = True
     logger: logging.Logger = logging.getLogger("wikjote")
 
-    @classmethod
-    def process(cls, data: list[dict]) -> list[dict]:
+    def process(self, data: list[dict]) -> list[dict]:
+
         # main
         result = []
 
@@ -20,7 +20,7 @@ class StructurizeHandler(Handler):
             word = page["page"]
             for languaje in page["sections"]:
                 if languaje["type"] != "languaje":
-                    cls.logger.warning(
+                    self.logger.warning(
                         "Expected languaje section but %s section found in word %s",
                         languaje["type"],
                         word,
@@ -30,20 +30,19 @@ class StructurizeHandler(Handler):
                 word_obj["word"] = word
                 word_obj["languaje"] = languaje["name"]
 
-                cls.process_sub_sections(languaje, word_obj)
+                self.process_sub_sections(languaje, word_obj)
 
                 result.append(word_obj)
 
         return result
 
-    @classmethod
-    def process_sub_sections(cls, section: dict[str, Any], word_obj: dict):
+    def process_sub_sections(self, section: dict[str, Any], word_obj: dict):
         for sub_section in section["sub_sections"]:
             match sub_section["type"]:
                 case "etymology":
-                    cls.process_etymology(sub_section, word_obj)
+                    self.process_etymology(sub_section, word_obj)
                 case "senses":
-                    cls.process_senses(sub_section, word_obj)
+                    self.process_senses(sub_section, word_obj)
                 case "idioms":
                     # TODO this
                     pass
@@ -51,22 +50,20 @@ class StructurizeHandler(Handler):
                     # TODO this
                     pass
                 case _:
-                    cls.logger.warning(
+                    self.logger.warning(
                         "Sub section of type %s and name %s not processed for word %s",
                         sub_section["type"],
                         sub_section["name"],
                         word_obj["word"],
                     )
 
-    @classmethod
-    def process_etymology(cls, section: dict[str, Any], word_obj: dict[str, Any]):
+    def process_etymology(self, section: dict[str, Any], word_obj: dict[str, Any]):
         if word_obj.get("etymologies") is None:
             word_obj["etymologies"] = []
         word_obj["etymologies"].append(section["contents"])
-        cls.process_sub_sections(section, word_obj)
+        self.process_sub_sections(section, word_obj)
 
-    @classmethod
-    def process_senses(cls, section: dict[str, Any], word_obj: dict[str, Any]):
+    def process_senses(self, section: dict[str, Any], word_obj: dict[str, Any]):
         parts_of_speech = word_obj.get("pos")
         if parts_of_speech is None:
             parts_of_speech = {}
@@ -107,4 +104,4 @@ class StructurizeHandler(Handler):
 
         current_pos["inflection"] = contents.get("inflection", None)
 
-        cls.process_sub_sections(section, word_obj)
+        self.process_sub_sections(section, word_obj)

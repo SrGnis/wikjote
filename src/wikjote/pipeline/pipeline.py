@@ -16,11 +16,13 @@ class Pipeline:
 
         self._output: Any = None
         self._handlers: list[type[Handler]] = []
+        self._handlers_args: list[dict] = []
         self._running: bool = False
 
-    def add_handler(self, handler: type[Handler]):
+    def add_handler(self, handler: type[Handler], arguments: dict):
         if len(self._handlers) == 0 or handler.is_compatible(self._handlers[-1]):
             self._handlers.append(handler)
+            self._handlers_args.append(arguments)
         else:
             raise IncompatibleHandlersError(self._handlers[-1], handler)
 
@@ -50,7 +52,9 @@ class Pipeline:
                     else:
                         worker.join()
                         self.workers_step[worker] = next_step
-                        worker.set_handler(self._handlers[next_step])
+                        worker.set_handler(
+                            self._handlers[next_step](**self._handlers_args[next_step])
+                        )
                         worker.start()
 
         # all the workers are done merge the data
@@ -70,7 +74,9 @@ class Pipeline:
                         tmp_workers.remove(worker)
                     else:
                         self.workers_step[worker] = next_step
-                        worker.set_handler(self._handlers[next_step])
+                        worker.set_handler(
+                            self._handlers[next_step](**self._handlers_args[next_step])
+                        )
                         worker.start()
 
         # merge the data of all workers

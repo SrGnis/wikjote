@@ -216,8 +216,9 @@ def build_pipeline() -> Pipeline:
         handler = importer.get_class(
             handler_info["module_name"], handler_info["class_name"]
         )
+        handler_arguments = handler_conf["arguments"]
 
-        process_pipe.add_handler(handler)
+        process_pipe.add_handler(handler, handler_arguments)
 
     return process_pipe
 
