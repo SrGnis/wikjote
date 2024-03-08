@@ -178,6 +178,9 @@ def download_zim(args):
 
 
 def register_rules():
+
+    ProcessorAssignator.default = config.WikjoteConfig.default_processor
+
     logger.info("Registring rules ...")
 
     for rule_conf in config.WikjoteConfig.rules:

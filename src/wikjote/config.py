@@ -2,6 +2,7 @@ import importlib.resources
 
 import wikjote.utils.osutils as osutils
 import wikjote.utils.importer as importer
+from wikjote.processors.procesor import Processor
 
 
 class WikjoteConfig:
@@ -20,7 +21,7 @@ class WikjoteConfig:
     process_workers_num: int
     pipeline: list[dict]
 
-    default_processor = None
+    default_processor: type[Processor]
 
 
 def print_default_config():
