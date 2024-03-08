@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from wikjote.pipeline.handler import Handler
@@ -18,6 +19,8 @@ class Pipeline:
         self._handlers: list[type[Handler]] = []
         self._handlers_args: list[dict[str, Any]] = []
         self._running: bool = False
+
+        self.logger: logging.Logger = logging.getLogger("wikjote")
 
     def add_handler(self, handler: type[Handler], arguments: dict[str, Any]):
         if len(self._handlers) == 0 or handler.is_compatible(self._handlers[-1]):
@@ -47,15 +50,15 @@ class Pipeline:
 
                     next_handler = self._handlers[next_step]
 
-                    if not next_handler.is_concurrent:
-                        self._switch_no_concurrent(next_step)
-                    else:
+                    if next_handler.is_concurrent():
                         worker.join()
                         self.workers_step[worker] = next_step
                         worker.set_handler(
                             self._handlers[next_step](**self._handlers_args[next_step])
                         )
                         worker.start()
+                    else:
+                        self._switch_no_concurrent(next_step)
 
         # all the workers are done merge the data
         self._output = self._merge_data()
@@ -66,7 +69,7 @@ class Pipeline:
         tmp_workers = self._workers.copy()
         while len(tmp_workers) > 0:
             for worker in self._workers:
-                if not worker.is_runnig():
+                if worker in tmp_workers and not worker.is_runnig():
                     worker.join()
                     step = self.workers_step[worker]
                     next_step = step + 1
@@ -84,7 +87,9 @@ class Pipeline:
         # setup a worker with the no concurrent handler
         concurrent_worker = self._workers[0]
         self.workers_step[concurrent_worker] = concurrent_index
-        concurrent_worker.set_handler(self._handlers[concurrent_index])
+        concurrent_worker.set_handler(
+            self._handlers[concurrent_index](**self._handlers_args[concurrent_index])
+        )
         concurrent_worker.set_data(data_merged)
         # start the worker and wait for him to finish
         concurrent_worker.start()

@@ -1,4 +1,5 @@
 from __future__ import annotations
+import logging
 
 from typing import Any, Type
 
@@ -7,6 +8,7 @@ class Handler:
     _input_type: list[type]
     _output_type: type
     _concurrent: bool
+    logger: logging.Logger = logging.getLogger("wikjote")
 
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
