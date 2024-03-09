@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Any
 
+import re
+
 import logging
 from wikjote.pipeline.handler import Handler
 
@@ -90,18 +92,46 @@ class StructurizeHandler(Handler):
 
         meanings: "list[dict]" = contents.get("senses", [])
         for meaning in meanings:
+
+            synonyms = self.clear_attribute(meaning["attributes"].get("sinónimos"))
+
+            hiponyms = meaning["attributes"].get("hipónimos")
+            if isinstance(hiponyms, str):
+                hiponyms = hiponyms.split(", ")
+
+            uses = meaning["attributes"].get("usos")
+            if isinstance(uses, str):
+                uses = uses.split(", ")
+
+            scopes = meaning["attributes"].get("ámbitos")
+            if isinstance(scopes, str):
+                scopes = scopes.split(", ")
+
             current_pos["meanings"].append(
                 {
                     "etimology": last_etymology,
                     "meaning": meaning["content"],
-                    # TODO singular and singular keys
-                    # TODO use a mach and case?
-                    # TODO Ambito Uso and others
-                    "synonyms": meaning["attributes"].get("Sinónimos"),
-                    "hiponyms": meaning["attributes"].get("Hipónimos"),
+                    "synonyms": synonyms,
+                    "hiponyms": hiponyms,
+                    "scopes": scopes,
+                    "uses": uses,
                 }
             )
 
         current_pos["inflection"] = contents.get("inflection", None)
 
         self.process_sub_sections(section, word_obj)
+
+    @staticmethod
+    def clear_attribute(attribute: Any) -> Any:
+        if isinstance(attribute, str):
+            matches = re.finditer(r"\(.*?\)", attribute)
+            for match in matches:
+                attribute = (
+                    attribute[0 : match.start()]
+                    + attribute[match.start() : match.end()].replace(" ", " ")
+                    + attribute[match.end() :]
+                )
+            attribute = attribute.split(", ")
+
+        return attribute

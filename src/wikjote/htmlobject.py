@@ -29,11 +29,13 @@ class HTMLObject:
 
     @staticmethod
     def get_all_text(
-        element: ElementBase
-        | HTMLObject
-        | list[ElementBase]
-        | list[HTMLObject]
-        | list[HTMLObject | ElementBase],
+        element: (
+            ElementBase
+            | HTMLObject
+            | list[ElementBase]
+            | list[HTMLObject]
+            | list[HTMLObject | ElementBase]
+        ),
     ) -> str:
         """Static method to get all the inner text on the elements.
 
@@ -122,7 +124,11 @@ class HTMLObject:
         for content in contents:
             split = content.text().split(":")
             if len(split) == 2:
-                attr_name = split[0].strip()
+                attr_name = str.lower(split[0].strip())
+                # appling plurals
+                # TODO: move this to a handler?
+                if attr_name[-1] != "s":
+                    attr_name = attr_name + "s"
                 attr_content = split[1].strip(" .")
                 res[attr_name] = attr_content
 
