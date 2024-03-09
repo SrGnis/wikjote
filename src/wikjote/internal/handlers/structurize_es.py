@@ -46,18 +46,23 @@ class StructurizeHandler(Handler):
                 case "senses":
                     self.process_senses(sub_section, word_obj)
                 case "idioms":
-                    # TODO this
+                    pass
+                case "additional_info":
                     pass
                 case "translations":
-                    # TODO this
+                    pass
+                case "see_more":
                     pass
                 case _:
-                    self.logger.warning(
-                        "Sub section of type %s and name %s not processed for word %s",
-                        sub_section["type"],
-                        sub_section["name"],
-                        word_obj["word"],
-                    )
+                    if "Etimología" in sub_section["name"]:
+                        self.process_etymology(sub_section, word_obj)
+                    else:
+                        self.logger.warning(
+                            "Sub section of type %s and name %s not processed for word %s",
+                            sub_section["type"],
+                            sub_section["name"],
+                            word_obj["word"],
+                        )
 
     def process_etymology(self, section: dict[str, Any], word_obj: dict[str, Any]):
         if word_obj.get("etymologies") is None:
