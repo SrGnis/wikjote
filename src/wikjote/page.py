@@ -44,9 +44,14 @@ class Page(HTMLObject):
         self.sections: list[Section] = Section.get_inner_sections(
             self, "first_sections"
         )
-        self.logger.debug(
-            'PAGE for lema "%s", number of SECTIONS %d', self.lema, len(self.sections)
-        )
+        if len(self.sections) > 0:
+            self.logger.debug(
+                'PAGE for lema "%s", number of SECTIONS %d',
+                self.lema,
+                len(self.sections),
+            )
+        else:
+            self.logger.warning('No SECTIONS found for PAGE of lema "%s"', self.lema)
 
     def process(self):
         """Process the Page and return a list of the dicts that represent the sections.
