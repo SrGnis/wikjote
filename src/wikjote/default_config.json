@@ -72,6 +72,17 @@
             }
         },
         {
+            "name": "wiktionary_es_flexive_form",
+            "type": "NameRule",
+            "args": ["Forma flexiva"],
+            "section_type": "flexive_form",
+            "processor": {
+                "module_name": "wikjote.internal.processors.defaultprocessor",
+                "class_name": "DefaultProcessor",
+                "is_file": false
+            }
+        },
+        {
             "name": "wiktionary_es_verb_form",
             "type": "NameRule",
             "args": ["Forma verbal"],
