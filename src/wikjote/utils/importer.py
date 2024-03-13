@@ -1,5 +1,8 @@
 import importlib.util
+import logging
 import sys
+
+logger: logging.Logger = logging.getLogger("wikjote")
 
 runtime_modules = {}
 
@@ -22,9 +25,9 @@ def import_module(name: str, is_file: bool = False):
 
             runtime_modules[name] = module
 
-            print(f"[INFO    ]: {name!r} has been imported")
+            logger.info("Module %s has been imported", name)
         else:
-            print(f"[ERROR   ]: can't find the {name!r} module")
+            logger.error("Can't find the %s module", name)
             exit(1)
 
 

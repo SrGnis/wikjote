@@ -120,11 +120,13 @@ def parse_args():
 def init_config(args):
     """Set up the config of the application using the provided args"""
 
-    config.read_config(args.config)
-
     config.WikjoteConfig.command = args.command
 
     config.WikjoteConfig.logger_level = args.verbose
+
+    init_logger()
+
+    config.read_config(args.config)
 
     config.WikjoteConfig.working_dir = args.directory
     config.WikjoteConfig.downloads_dir = os.path.join(
@@ -247,7 +249,6 @@ def print_config():
 def main():
     arguments = parse_args()
     init_config(arguments)
-    init_logger()
     init_folders()
 
     if config.WikjoteConfig.command == "convert":
