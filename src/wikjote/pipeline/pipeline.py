@@ -6,6 +6,11 @@ from wikjote.pipeline.pipelineworker import PipelineWorker
 
 
 class Pipeline:
+    """
+    Note: Well I just learned about GIL... so basicaly parallelism is not posible right now,
+    so until furter notice just use one worker
+    """
+
     def __init__(self, data: Any, num_workers: int):
         self._input: Any = data
         self._workers: list[PipelineWorker] = [

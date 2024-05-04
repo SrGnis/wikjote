@@ -4,6 +4,7 @@ from typing import Any
 import re
 
 import logging
+import unicodedata
 from wikjote.pipeline.handler import Handler
 
 
@@ -133,7 +134,7 @@ class StructurizeHandler(Handler):
 
         raw_pos: str = section["name"]
 
-        pos = self.translate_pos(raw_pos.split(" "))
+        pos = self.translate_pos(raw_pos, word_obj.get("word", "_None_"))
 
         current_pos: dict = parts_of_speech  # type: ignore
         for pos_entry in pos:
@@ -159,17 +160,45 @@ class StructurizeHandler(Handler):
         return attribute
 
     @classmethod
-    def translate_pos(cls, pos_list: list[str]) -> list[str]:
+    def translate_pos(cls, raw_pos: str, word: str) -> list[str]:
+
+        # clean it
+        raw_pos = raw_pos.replace(" ", " ")
+        raw_pos = re.sub(r"\[.*\]", "", raw_pos)
+        raw_pos = raw_pos.replace("de ", "")
+        raw_pos = raw_pos.replace("Locución adverbial", "Locución_adverbial")
+        raw_pos = raw_pos.replace("Locución verbal", "Locución_verbal")
+
+        pos_list = raw_pos.split()
 
         new_pos_list = []
         for pos_entry in pos_list:
             pos_entry = pos_entry.lower()
             translation = cls.pos_translations.get(pos_entry, None)
-            if translation is None:
-                cls.logger.warning("POS %s without translation", pos_entry)
-                translation = pos_entry
+            if translation is not None:
+                if isinstance(translation, list):
+                    new_pos_list = new_pos_list + translation
+                else:
+                    new_pos_list.append(translation)
+            else:
+                cls.logger.warning(
+                    "POS %s without translation for word %s", pos_entry, word
+                )
 
-            new_pos_list.append(translation)
+        return new_pos_list
+
+    @classmethod
+    def translate_pos_2nd_pass(cls, pos_list: list[str], word: str) -> list[str]:
+
+        new_pos_list = []
+        for pos_entry in pos_list:
+            translation = cls.pos_translations.get(pos_entry, None)
+            if translation is not None:
+                new_pos_list.append(translation)
+            else:
+                cls.logger.warning(
+                    "POS %s without translation for word %s", pos_entry, word
+                )
 
         return new_pos_list
 
@@ -189,7 +218,17 @@ class StructurizeHandler(Handler):
         "transitivo": "transitive",
         "intransitivo": "intransitive",
         "posesivo": "possessive",
-        "de cantidad": "quantity",
-        "forma verbal": "verb_form",
+        "cantidad": "quantity",
         "interjección": "interjection",
+        "forma": "form",
+        "verbal": "verb",
+        "sustantiva": "noun",
+        "adjetiva": "adjetive",
+        "adjetival": "adjetive",
+        "adverbial": "adverb",
+        "masculina": "masculine",
+        "femenina": "femenine",
+        "interrogativa": "interrogative",
+        "locución_adverbial": "adverbial_phrase",
+        "locución_verbal": "verb_phrase",
     }

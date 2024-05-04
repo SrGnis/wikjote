@@ -119,6 +119,24 @@
     "pipeline": [
         {
             "handler": {
+                "module_name": "wikjote.internal.handlers.filter",
+                "class_name": "FilterHandler",
+                "is_file": false
+            },
+            "arguments":{}
+        },
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.dump_json",
+                "class_name": "DumpJsonHandler",
+                "is_file": false
+            },
+            "arguments":{
+                "output_path": "./wikjote_dir/clean.json"
+            }
+        },
+        {
+            "handler": {
                 "module_name": "wikjote.internal.handlers.structurize_es",
                 "class_name": "StructurizeHandler",
                 "is_file": false
