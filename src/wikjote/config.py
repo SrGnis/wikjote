@@ -10,6 +10,7 @@ class WikjoteConfig:
     logger_level: str
     working_dir: str
     downloads_dir: str
+    pretty_print: bool
 
     zimfile: str
     lemas: list[str] | None = None

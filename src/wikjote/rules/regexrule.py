@@ -4,9 +4,9 @@ from wikjote.rules.assignationrule import AssignationRule
 from wikjote.section import Section
 
 
-class RegEx(AssignationRule):
+class RegExRule(AssignationRule):
     def __init__(
-        self, regex: str, field: str, processor: type, section_type: str | None
+        self, processor: type, section_type: str | None, field: str, regex: str
     ):
         super().__init__(processor, section_type)
         self.regex = regex

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import logging
+from typing import Sized
 from lxml.etree import ElementBase
 
 from wikjote.exceptions import XMLNotFound
@@ -92,6 +93,23 @@ class HTMLObject:
         if len(result) == 0:
             raise XMLNotFound(query)
         return result
+    
+    def seach_check(self, query: str) -> bool:
+        """Returns if the xpath query finds any result.
+
+        Args:
+            query (str): A xpath query.
+
+        Returns:
+            bool
+        """
+        xpath_result = self.root.xpath(query)
+        if (isinstance(xpath_result, bool)):
+            return xpath_result
+        if (isinstance(xpath_result, Sized)):
+            return (len(xpath_result) > 0)
+        return False
+
 
     def parse_attributes(self):
         """Parse the elements of a atribute list of ES wiktionary.

@@ -41,8 +41,9 @@ class Page(HTMLObject):
         self.name = lema
         self.logger.debug('Creating PAGE for lema "%s"', self.lema)
         self.logger.debug('Getting SECTIONS for lema "%s"', self.lema)
+        query_args = ["Español"]
         self.sections: list[Section] = Section.get_inner_sections(
-            self, "first_sections"
+            self, "language_section_chosed", query_args
         )
         if len(self.sections) > 0:
             self.logger.debug(
@@ -51,7 +52,8 @@ class Page(HTMLObject):
                 len(self.sections),
             )
         else:
-            self.logger.warning('No SECTIONS found for PAGE of lema "%s"', self.lema)
+            if(len(query_args) == 0):
+                self.logger.warning('No SECTIONS found for PAGE of lema "%s"', self.lema)
 
     def process(self):
         """Process the Page and return a list of the dicts that represent the sections.

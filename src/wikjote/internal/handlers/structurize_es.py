@@ -4,7 +4,6 @@ from typing import Any
 import re
 
 import logging
-import unicodedata
 from wikjote.pipeline.handler import Handler
 
 
@@ -51,26 +50,25 @@ class StructurizeHandler(Handler):
                     self.process_etymology(sub_section, word_obj)
                 case section_type if section_type in ["senses", "verb_form"]:
                     self.process_senses(sub_section, word_obj)
-                case "idioms":
-                    pass
-                case "additional_info":
-                    pass
-                case "translations":
-                    pass
                 case "flexive_form":
                     self.process_sub_sections(sub_section, word_obj)
+                case "conjugation":
+                    self.process_conjugation(sub_section, word_obj)
+                case "idioms":
+                    pass # TODO
+                case "additional_info":
+                    pass # TODO
+                case "translations":
+                    pass # TODO
                 case "see_more":
-                    pass
+                    pass # TODO
                 case _:
-                    if "Etimología" in sub_section["name"]:
-                        self.process_etymology(sub_section, word_obj)
-                    else:
-                        self.logger.warning(
-                            "Sub section of type %s and name %s not processed for word %s",
-                            sub_section["type"],
-                            sub_section["name"],
-                            word_obj["word"],
-                        )
+                    self.logger.warning(
+                        "Sub section of type %s and name %s not processed for word %s",
+                        sub_section["type"],
+                        sub_section["name"],
+                        word_obj["word"],
+                    )
 
     def process_etymology(self, section: dict[str, Any], word_obj: dict[str, Any]):
         if word_obj.get("etymologies") is None:
@@ -78,8 +76,22 @@ class StructurizeHandler(Handler):
         word_obj["etymologies"].append(section["contents"])
         self.process_sub_sections(section, word_obj)
 
+    def process_conjugation(self, section: dict[str, Any], word_obj: dict[str, Any]):
+        try:
+            target = word_obj["pos"][-1] # we suppose that before a conjugation section there is a sense section 
+            conjugation = self.inflection_table_to_list(section["contents"])
+            conjugation = filter(lambda x: x != "" and "Se emplea" not in x, conjugation)
+            conjugation = [x.split(" ")[-1] for x in conjugation]
+            conjugation = list(dict.fromkeys(conjugation))
+            target['inflection'].extend(conjugation)
+        except:
+            self.logger.warning('Cannot process the the conjugation of word %s', word_obj["word"]) 
+        self.process_sub_sections(section, word_obj)
+
     def process_senses(self, section: dict[str, Any], word_obj: dict[str, Any]):
         current_pos = self.get_pos(section, word_obj)
+        if current_pos is None:
+            return
 
         etymologies: list | None = word_obj.get("etymologies")
         if etymologies is None:
@@ -122,28 +134,51 @@ class StructurizeHandler(Handler):
                 }
             )
 
-        current_pos["inflection"] = contents.get("inflection", None)
+        current_pos["inflection"] = self.inflection_table_to_list(contents.get("inflection", None))
 
         self.process_sub_sections(section, word_obj)
 
-    def get_pos(self, section: dict[str, Any], word_obj: dict[str, Any]):
+    def inflection_table_to_list(self, table: dict[str, Any] | None ) -> list[str]:
+        tmp_res: list[str] = []
+
+        if table is None:
+            return []
+
+        for value in table.values():
+            if isinstance(value, dict):
+                tmp_res.extend(self.inflection_table_to_list(value))
+            elif isinstance(value, list):
+                tmp_res.extend(value)
+            elif isinstance(value, str):
+                tmp_res.append(value)
+
+        res: list[str] = []
+        for value in tmp_res:
+            value = value.replace(',o ', ', ')
+            value = value.split(',')
+            res.extend(value)
+
+        res = [x.strip() for x in res]
+        res = list(dict.fromkeys(res))
+
+        return res
+
+    def get_pos(self, section: dict[str, Any], word_obj: dict[str, Any]) -> dict[str, list[Any]] | None:
         parts_of_speech = word_obj.get("pos")
         if parts_of_speech is None:
-            parts_of_speech = {}
+            parts_of_speech = []
             word_obj["pos"] = parts_of_speech
 
         raw_pos: str = section["name"]
 
+        # {"primary": ["noun"], "attr": ["masculine"]}
         pos = self.translate_pos(raw_pos, word_obj.get("word", "_None_"))
-
-        current_pos: dict = parts_of_speech  # type: ignore
-        for pos_entry in pos:
-            tmp = current_pos.get(pos_entry)  # type: ignore
-            if tmp is None:
-                current_pos[pos_entry] = {}
-            current_pos = current_pos.get(pos_entry)  # type: ignore
-
-        return current_pos
+        if pos is None:
+            return None
+        
+        parts_of_speech.append(pos)
+        
+        return pos
 
     @staticmethod
     def clear_attribute(attribute: Any) -> Any:
@@ -160,75 +195,156 @@ class StructurizeHandler(Handler):
         return attribute
 
     @classmethod
-    def translate_pos(cls, raw_pos: str, word: str) -> list[str]:
+    def translate_pos(cls, raw_pos: str, word: str) -> dict[str, list[str]] | None:
 
         # clean it
+        raw_pos = raw_pos.lower()
         raw_pos = raw_pos.replace(" ", " ")
+        raw_pos = raw_pos.replace(",", "")
+        raw_pos = raw_pos.replace(".", "")
         raw_pos = re.sub(r"\[.*\]", "", raw_pos)
-        raw_pos = raw_pos.replace("de ", "")
-        raw_pos = raw_pos.replace("Locución adverbial", "Locución_adverbial")
-        raw_pos = raw_pos.replace("Locución verbal", "Locución_verbal")
 
         pos_list = raw_pos.split()
 
-        new_pos_list = []
+        new_pos = {"primary": [], "attr": []}
         for pos_entry in pos_list:
-            pos_entry = pos_entry.lower()
-            translation = cls.pos_translations.get(pos_entry, None)
-            if translation is not None:
-                if isinstance(translation, list):
-                    new_pos_list = new_pos_list + translation
-                else:
-                    new_pos_list.append(translation)
-            else:
-                cls.logger.warning(
-                    "POS %s without translation for word %s", pos_entry, word
-                )
+            if pos_entry in cls.pos_rules["ban"]:
+                return None
+            if pos_entry in cls.pos_rules["ignore"]:
+                continue
+            primary = cls.pos_rules["primary"].get(pos_entry, None)
+            if primary is not None:
+                new_pos["primary"].append(primary)
+                continue
+            attr = cls.pos_rules["attr"].get(pos_entry, None)
+            if attr is not None:
+                new_pos["attr"].append(attr)
+                continue
+            cls.logger.warning('POS not found for %s in %s',pos_entry, word)
 
-        return new_pos_list
+        return new_pos
 
-    @classmethod
-    def translate_pos_2nd_pass(cls, pos_list: list[str], word: str) -> list[str]:
-
-        new_pos_list = []
-        for pos_entry in pos_list:
-            translation = cls.pos_translations.get(pos_entry, None)
-            if translation is not None:
-                new_pos_list.append(translation)
-            else:
-                cls.logger.warning(
-                    "POS %s without translation for word %s", pos_entry, word
-                )
-
-        return new_pos_list
-
-    pos_translations: dict[str, str] = {
-        "sustantivo": "noun",
-        "adjetivo": "adjetive",
-        "determinante": "determiner",
-        "verbo": "verb",
-        "adverbio": "adverb",
-        "pronombre": "pronoun",
-        "masculino": "masculine",
-        "femenino": "femenine",
-        "indefinido": "indefinite",
-        "cardinal": "cardinal",
-        "ordinal": "ordinal",
-        "preposición": "preposition",
-        "transitivo": "transitive",
-        "intransitivo": "intransitive",
-        "posesivo": "possessive",
-        "cantidad": "quantity",
-        "interjección": "interjection",
-        "forma": "form",
-        "verbal": "verb",
-        "sustantiva": "noun",
-        "adjetiva": "adjetive",
-        "adjetival": "adjetive",
-        "adverbial": "adverb",
-        "masculina": "masculine",
-        "femenina": "femenine",
-        "interrogativa": "interrogative",
-        "locución_adverbial": "adverbial_phrase",
-        "locución_verbal": "verb_phrase",
+    pos_rules = {
+        "primary": {
+            "artículo": "article",
+            "conjunción": "conjunction",
+            "contracción": "contraction",
+            "acrónimo": "acronym",
+            "expresión": "expression",
+            "frase": "phrase",
+            "letra": "letter",
+            "locución": "locution",
+            "onomatopeya": "onomatopoeia",
+            "participio": "participle", 
+            "prefijo": "prefix",
+            "refrán": "proverb",
+            "sigla": "acronym",
+            "sílaba": "syllable",
+            "símbolo": "symbol",
+            "sufijo": "suffix",
+            "sufija": "suffix",
+            "sustantivo": "noun",
+            "adjetivo": "adjective",
+            "determinante": "determiner",
+            "verbo": "verb",
+            "adverbio": "adverb",
+            "pronombre": "pronoun",
+            "interjección": "interjection",
+            "preposición": "preposition",
+            "forma": "form",
+        },
+        "attr": {
+            "masculino": "masculine",
+            "femenino": "femenine",
+            "indefinido": "indefinite",
+            "cardinal": "cardinal",
+            "ordinal": "ordinal",
+            "transitivo": "transitive",
+            "intransitivo": "intransitive",
+            "posesivo": "possessive",
+            "posesiva": "possessive",
+            "cantidad": "quantity",
+            "femenina": "feminine",
+            "interrogativa": "interrogative",
+            "verbal": "verb",
+            "sustantiva": "noun",
+            "adjetiva": "adjective",
+            "adjetival": "adjective",
+            "adverbial": "adverb",
+            "masculina": "masculine",
+            "abreviatura": "abbreviation",
+            "adversativa": "adversative",
+            "afirmación": "assertion",
+            "ambiguo": "ambiguous",
+            "ambigua": "ambiguous",
+            "auxiliar": "auxiliary",
+            "causal": "causal",
+            "comparativo": "comparative",
+            "compuesto": "compound",
+            "concesiva": "concessive",
+            "condicional": "conditional",
+            "conjuntiva": "conjunctive",
+            "consecutiva": "consecutive",
+            "coordinante": "coordinating",
+            "copulativa": "copulative",
+            "defectivo": "defective",
+            "demostrativo": "demonstrative",
+            "demostrativa": "demonstrative",
+            "determinado": "definite",
+            "deverbal": "deverbal",
+            "dígrafo": "digraph",
+            "distributiva": "distributive",
+            "duda": "doubt",
+            "enclítico": "enclitic",
+            "enclítica": "enclitic",
+            "epiceno": "epicene",
+            "exclamativo": "exclamative",
+            "final": "final",
+            "flexivo": "inflectional",
+            "impersonal": "impersonal",
+            "indeclinable": "indeclinable",
+            "indeterminado": "indeterminate",
+            "infijo": "infix",
+            "interjectiva": "interjective",
+            "interrogativo": "interrogative",
+            "intransitiva": "intransitive",
+            "invariable": "invariable",
+            "latina": "latin",
+            "locativo": "locative",
+            "lugar": "locative",
+            "modal": "modal",
+            "modo": "mode",
+            "negación": "negation",
+            "neutro": "neuter",
+            "numeral": "numeral",
+            "número": "number",
+            "orden": "order",
+            "partitivo": "partitive",
+            "partitiva": "partitive",
+            "personal": "personal",
+            "plural": "plural",
+            "prepositiva": "prepositive",
+            "pronominal": "pronominal",
+            "propia": "own",
+            "propio": "own",
+            "reflexivo": "reflexive",
+            "relativo": "relative",
+            "superlativo": "superlative",
+            "tiempo": "temporal",
+            "transitiva": "transitive",
+            "vocativo": "vocative",
+        },
+        "ignore": [
+            "y",
+            "o",
+            "e",
+            "hecha",
+            "de",
+            "con",
+            "+",
+        ],
+        "ban": [
+            "refranes",
+            "relacionados",
+        ]
     }

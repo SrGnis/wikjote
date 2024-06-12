@@ -1,3 +1,4 @@
+from typing import Any
 from wikjote.processors.procesor import Processor
 
 

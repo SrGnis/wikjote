@@ -16,7 +16,7 @@ def parse_table(root: ElementBase):
     flection_obj = None
     flection_table_found: list[ElementBase] = root.xpath(xpathqueries["flection"])
     if len(flection_table_found) > 0:
-        flection_table: ElementBase = flection_table_found[0]
+        flection_table: ElementBase = flection_table_found[-1]
         rows: list[ElementBase] = flection_table.xpath(".//tr")
 
         flection_obj = {}
@@ -128,4 +128,10 @@ def get_dict_level(dict_obj, levels):
 
 
 def get_all_text(element: ElementBase) -> str:
+    for child in element.iterchildren():
+        if(child.tag == "sup"):
+            element.replace(child, ElementBase(" "))
+        if(child.tag == "br"):
+            element.replace(child, ElementBase(","))
+
     return "".join(element.itertext())  # type: ignore

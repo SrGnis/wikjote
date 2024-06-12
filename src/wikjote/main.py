@@ -14,6 +14,7 @@ import wikjote.utils.importer as importer
 from wikjote.rules.assignator import ProcessorAssignator
 from wikjote.rules.namerule import NameRule
 from wikjote.rules.xpathrule import XPathRule
+from wikjote.rules.regexrule import RegExRule
 
 logger: logging.Logger = logging.getLogger("wikjote")
 
@@ -49,6 +50,12 @@ def parse_args():
         type=str,
         default="./wikjote_dir",
         help="Directory where the downloads and result files will be created",
+    )
+
+    parser.add_argument(
+        "--pretty",
+        action="store_true",
+        help="Pretty print the json outputs",
     )
 
     # sub commands
@@ -124,6 +131,8 @@ def init_config(args):
 
     config.WikjoteConfig.logger_level = args.verbose
 
+    config.WikjoteConfig.pretty_print = args.pretty
+
     init_logger()
 
     config.read_config(args.config)
@@ -178,7 +187,7 @@ def download_zim(args):
     else:
         netutils.download_file(args.zim_url, config.WikjoteConfig.zimfile)
 
-
+# TODO: move this method
 def register_rules():
 
     ProcessorAssignator.default = config.WikjoteConfig.default_processor
@@ -186,27 +195,31 @@ def register_rules():
     logger.info("Registring rules ...")
 
     for rule_conf in config.WikjoteConfig.rules:
-        match rule_conf["type"]:
+        rule_desc = rule_conf["rule"]
+        rule_args = rule_conf["arguments"]
+        match rule_desc["type"]:
             case "NameRule":
                 rule_class = NameRule
             case "XPathRule":
                 rule_class = XPathRule
+            case "RegExRule":
+                rule_class = RegExRule
             case _:
                 continue
 
-        processor_conf = rule_conf["processor"]
+        processor_conf = rule_desc["processor"]
         importer.import_module(processor_conf["module_name"], processor_conf["is_file"])
         processor = importer.get_class(
             processor_conf["module_name"], processor_conf["class_name"]
         )
 
-        rule = rule_class(rule_conf["args"][0], processor, rule_conf["section_type"])
+        rule = rule_class(processor, rule_desc["section_type"], **rule_args)
 
         ProcessorAssignator.add_rule(rule)
 
     logger.info("%d rules registered", len(ProcessorAssignator.rules))
 
-
+# TODO: move this method
 def build_pipeline() -> Pipeline:
     logger.info("Building pipeline ...")
 

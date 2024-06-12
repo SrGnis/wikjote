@@ -12,7 +12,3 @@
 - [ ] Improve zim download options.
 - [ ] Allow html sources more than zims.
 - [ ] Refactor class names
-
-# FIX
-
-- [ ] first_sections querry dont get wrong level sections that are not Languajes, e.j. "cazar"

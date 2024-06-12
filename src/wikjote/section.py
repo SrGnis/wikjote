@@ -1,3 +1,4 @@
+from typing import Any
 from lxml.etree import ElementBase
 
 from wikjote.htmlobject import HTMLObject
@@ -104,7 +105,7 @@ class Section(HTMLObject):
         return res
 
     @staticmethod
-    def get_inner_sections(root_obj: HTMLObject, query: str | None = None):
+    def get_inner_sections(root_obj: HTMLObject, query: str | None = None, args: list[Any] = []):
         """Searches sections in the "root_obj".
 
         The default query is "inner_secctions".
@@ -120,7 +121,7 @@ class Section(HTMLObject):
         """
         if query is None:
             query = "inner_sections"
-        sections = root_obj.find(queries.xpathqueries[query])
+        sections = root_obj.find(queries.xpathqueries[query].format(*args))
         return [Section(section.root, root_obj) for section in sections]
 
     @staticmethod

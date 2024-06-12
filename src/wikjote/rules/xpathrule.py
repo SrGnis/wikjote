@@ -3,9 +3,9 @@ from wikjote.section import Section
 
 
 class XPathRule(AssignationRule):
-    def __init__(self, xpath: str, processor: type, section_type: str | None):
+    def __init__(self, processor: type, section_type: str | None, xpath: str):
         super().__init__(processor, section_type)
         self.xpath = xpath
 
     def evaluate(self, section: Section) -> bool:
-        return len(section.find(self.xpath)) > 0
+        return section.seach_check(self.xpath)

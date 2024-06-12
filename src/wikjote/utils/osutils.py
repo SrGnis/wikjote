@@ -3,6 +3,8 @@ import json
 import os
 import logging
 
+import wikjote.config as config
+
 logger: logging.Logger = logging.getLogger("wikjote")
 
 
@@ -19,7 +21,7 @@ def write_file(path, contents):
 
 
 def write_json(path: str, obj: object):
-    contents = json.dumps(obj, ensure_ascii=False, indent=2)
+    contents = json.dumps(obj, ensure_ascii=False, indent= 2 if config.WikjoteConfig.pretty_print else None)
     write_file(path, contents)
 
 
