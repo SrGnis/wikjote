@@ -9,26 +9,26 @@ from wikjote.rules.assignator import ProcessorAssignator
 class Section(HTMLObject):
     """The class that repesents a Section of a Page.
 
-    Subclass of HTMLObject.
+    Subclass of `HTMLObject`.
 
     The objective of the class is to ease the generation and processing of a section and their subsections.
 
-    Usually created by the static method Section.get_inner_sections().
+    Usually created by the static method `Section.get_inner_section()`.
 
     Attributes:
-        root: The wrapped ElementBase.
-        parent: The parent HTMLObject if any.
+        root: The wrapped `ElementBase`.
+        parent: The parent `HTMLObject` if any.
         name: The name of the object extracted from the root.
-        processor: The processor associated to this section by the ProcessorAssignator.
+        processor: The processor associated to this section by the `ProcessorAssignator`.
         subsections: A list of sections inside this one.
     """
 
     def __init__(self, root: ElementBase, parent: HTMLObject | None = None) -> None:
         """Initializes the instance.
 
-        The "name" is extracted from the root by the get_section_name() method.
-        It calls the set_processor() method to assign a "processor" to the section.
-        It also calls the get_inner_sections() method to fill the "subsections" attribute.
+        The `name` is extracted from the `root` by the `get_section_name()` method.
+        It calls the `set_processor()` method to assign a `processor` to the section.
+        It also calls the `get_inner_sections()` method to fill the `subsections` attribute.
 
         Args:
             root (ElementBase): A xml element to wrapp.
@@ -47,7 +47,7 @@ class Section(HTMLObject):
         )
 
     def set_processor(self):
-        """Sets the attribute "processor" to the result of calling ProcessorAssignator.assign() over itself."""
+        """Sets the attribute `processor` to the result of calling `ProcessorAssignator.assign() over itself."""
         self.processor = ProcessorAssignator.assign(self)
         self.logger.debug(
             'SECTION "%s" PROCESSOR: "%s" with type "%s"',
@@ -59,8 +59,8 @@ class Section(HTMLObject):
     def process(self):
         """Process the section, and subsections into a dict.
 
-        Calls the run() method of the Processor associated to get the contents
-        of the section and calls process_subsections() to also process his subsections.
+        Calls the `run()` method of the `Processor` associated to get the contents
+        of the section and calls `process_subsections()` to also process his subsections.
 
         Returns:
             dict: A repesentation of de section following the next schema:
@@ -92,7 +92,7 @@ class Section(HTMLObject):
     def process_subsections(self):
         """Process the subsections.
 
-        Calls the process() method of each subsection and return a list of the results.
+        Calls the `process()` method of each subsection and return a list of the results.
 
         Returns:
             list: A list composed by dicts with the same structure as the result of the process() method.
@@ -106,9 +106,9 @@ class Section(HTMLObject):
 
     @staticmethod
     def get_inner_sections(root_obj: HTMLObject, query: str | None = None, args: list[Any] = []):
-        """Searches sections in the "root_obj".
+        """Searches sections in the `root_obj`.
 
-        The default query is "inner_secctions".
+        The default query is `inner_secctions`.
 
         TODO improve the optional query.
 
@@ -126,7 +126,7 @@ class Section(HTMLObject):
 
     @staticmethod
     def get_section_name(root_obj: HTMLObject):
-        """Gets the section name using the query "section_name".
+        """Gets the section name using the query `section_name`.
 
         TODO allow using other queries.
 

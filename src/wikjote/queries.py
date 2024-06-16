@@ -1,3 +1,8 @@
+"""
+A dict of XPath queries for easy usage.
+
+Note: In the future this should be replaced by a dedicated Repository class or something like that.
+"""
 xpathqueries = {
     "wiktionary_es_download_links": './/a[contains(text(),"wiktionary_es_all_nopic") ]',
     "language_section_chosed": '//h2[@id="{}"]/parent::summary/parent::details',

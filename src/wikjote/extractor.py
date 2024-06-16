@@ -14,6 +14,14 @@ logger: logging.Logger = logging.getLogger("wikjote")
 
 
 def process_zim():
+    """Processes ZIM file to extract and convert Wiktionary data.
+    
+    This function supports both output formats: writing results directly into a JSON array stored in files (nd_output=False) 
+    or using a generator yielding one processed entry at a time (nd_output=True).
+
+    Note: The different output methods are a proof of concept, This should be improved.
+    """
+
     logger.info("Starting ZIM processing")
 
     zim = Archive(config.WikjoteConfig.zimfile)
@@ -21,7 +29,7 @@ def process_zim():
     if config.WikjoteConfig.lemas is not None:
         lemas = config.WikjoteConfig.lemas
     else:
-        # lemas = [entry.title for entry in zim] not implemented yet
+        # lemas = [entry.title for entry in zim] # not implemented yet see https://github.com/openzim/python-libzim/issues/94
         lemas = [zim._get_entry_by_id(id).title for id in range(zim.all_entry_count)]
 
     logger.info("%d lemas to process", len(lemas))
@@ -43,6 +51,17 @@ def process_zim():
 
 
 def simple_loop(lemas, zim):
+    """
+    Processes a list of lemas (lemma titles) and an Archive object `zim` to yield processed page data.
+    
+    This function iterates through each lemma in the given list, retrieves its corresponding entry from the ZIM archive, 
+    processes it into Page objects using the provided `page_process` method and finally writtes the processed data into a JSON file.
+    
+    Arguments:
+    - lemas (list): A list of strings representing lemma titles to process. Spaces in lemma titles are replaced with underscores.
+    - zim (Archive): An Archive object from the libzim library, providing access to Wiktionary's ZIM data structure.
+    """
+    
     res = []
     for lema in lemas:
         lema: str = lema.strip()

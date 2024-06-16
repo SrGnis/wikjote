@@ -7,7 +7,7 @@ from wikjote.exceptions import XMLNotFound
 
 
 class HTMLObject:
-    """A wrapper class for lxml.etree.ElementBase with some utility methods.
+    """A wrapper class for `lxml.etree.ElementBase` with some utility methods.
 
     Attributes:
         root: The wrapped ElementBase.
@@ -58,7 +58,7 @@ class HTMLObject:
     def text(self) -> str:
         """Get the inner text of this object.
 
-        Calls get_all_text() to get the text.
+        Calls `get_all_text()` to get the text.
 
         Returns:
             str: The inner text.
@@ -112,9 +112,9 @@ class HTMLObject:
 
 
     def parse_attributes(self):
-        """Parse the elements of a atribute list of ES wiktionary.
+        """Parse the elements of a attribute list of ES wiktionary.
 
-        Given a atrribute list following this schema:
+        Given a attribute list following this schema:
 
         <ul>
           <li>

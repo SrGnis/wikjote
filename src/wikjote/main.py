@@ -1,7 +1,6 @@
 import os
 import argparse
 import logging
-import pprint
 
 from wikjote.extractor import process_zim
 import wikjote.config as config
@@ -176,11 +175,13 @@ def init_config(args):
 
 
 def init_folders():
+    "Generates the folder structure"
     osutils.mkdir_if_not_exists(config.WikjoteConfig.working_dir)
     osutils.mkdir_if_not_exists(config.WikjoteConfig.downloads_dir)
 
 
 def download_zim(args):
+    "Downloads either the last eswictionary zim avaible or the one provided in the arguments"
     logger.info("Downloading zim ...")
     if args.zim_url is None:
         netutils.download_last_zim(config.WikjoteConfig.zimfile)
@@ -189,6 +190,16 @@ def download_zim(args):
 
 # TODO: move this method
 def register_rules():
+    """
+    Registers and initializes rule processors for various types of rules provided in the configuration.
+    
+    This function sets the default processor assignment and iterates over each configuration 
+    for a rule within config.WikjoteConfig.rules. It determines the type of rule by matching its description against 
+    predefined cases (NameRule, XPathRule, RegExRule), imports the relevant module if it's provided as an import path, 
+    retrieves the corresponding processor class and instantiates a new instance for each rule with appropriate arguments.
+    
+    The rules are registered in ProcessorAssignator using add_rule method.
+    """
 
     ProcessorAssignator.default = config.WikjoteConfig.default_processor
 
@@ -242,6 +253,14 @@ def build_pipeline() -> Pipeline:
 
 
 def init_logger():
+    """
+    Initializes the logging system according to configuration settings and current log level.
+
+    The logger format is usually [%(levelname)-8s][%(threadName)s]: %(message)s.
+    If the log level is DEBUG the format will be [%(levelname)-8s][%(threadName)s]:%(indent)s%(message)s
+    and will use IndentFormatter which adds indentation depending the method call stack length.
+    """
+
     logger.setLevel(config.WikjoteConfig.logger_level)
 
     log_handler = logging.StreamHandler()

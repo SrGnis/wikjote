@@ -7,6 +7,23 @@ from wikjote.pipeline.pipelineworker import PipelineWorker
 
 class Pipeline:
     """
+    Class that manages the concurrent execution of Handlers on a input data.
+
+    The `Pipeline` will process the provided input data trough a sequence of `Handlers`.
+    To execute those Handlers it will create a number of `PipelineWorkers` corresponding to the
+    argument `num_workers`. The Pipeline uses a list of Handlers that forms the each steep of the pipeline.
+    The `Pipeline` supports the execution a mix of concurrent and no concurrent `Handlers` by splitting and merging the data
+    and syncing the `PipelineWorkers` before execunting no concurrent `Handlers`.
+
+    Attributes:
+    - _input (Any) Input data to be processed.
+    - _workers (list[PipelineWorker]) List to hold the instances of `PipelineWorkers`
+    - _workers_step (dict[PipelineWorker, int]) Dict to keep track in which step of the pipeline is each `PipelineWorker`.
+    - _output (Any) Attribute that will hold the result of the pipeline. 
+    - _handlers (list[type[Handler]]) List of `Handlers` that will be executed.
+    - _handlers_args (list[dict[str, Any]]) Dict to store the arguments that will be provided to each `Handler` on creation.
+    - _running (bool) 
+
     Note: Well I just learned about GIL... so basicaly parallelism is not posible right now,
     so until furter notice just use one worker
     """
@@ -28,6 +45,16 @@ class Pipeline:
         self.logger: logging.Logger = logging.getLogger("wikjote")
 
     def add_handler(self, handler: type[Handler], arguments: dict[str, Any]):
+        """
+        Adds a new handler to the pipeline.
+
+        This method allows adding an additional handler to process data within the pipeline.
+        The handler should implement the `process` method which defines how the input data is processed.
+
+        Arguments:
+            - handler (Handler): A Handler instance that will be added to the pipeline for processing data.
+        """
+
         if len(self._handlers) == 0 or handler.is_compatible(self._handlers[-1]):
             self._handlers.append(handler)
             self._handlers_args.append(arguments)
