@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from wikjote.pipeline.handler import Handler
@@ -5,6 +6,28 @@ from wikjote.pipeline.pipelineworker import PipelineWorker
 
 
 class Pipeline:
+    """
+    Class that manages the concurrent execution of Handlers on a input data.
+
+    The `Pipeline` will process the provided input data trough a sequence of `Handlers`.
+    To execute those Handlers it will create a number of `PipelineWorkers` corresponding to the
+    argument `num_workers`. The Pipeline uses a list of Handlers that forms the each steep of the pipeline.
+    The `Pipeline` supports the execution a mix of concurrent and no concurrent `Handlers` by splitting and merging the data
+    and syncing the `PipelineWorkers` before execunting no concurrent `Handlers`.
+
+    Attributes:
+    - _input (Any) Input data to be processed.
+    - _workers (list[PipelineWorker]) List to hold the instances of `PipelineWorkers`
+    - _workers_step (dict[PipelineWorker, int]) Dict to keep track in which step of the pipeline is each `PipelineWorker`.
+    - _output (Any) Attribute that will hold the result of the pipeline. 
+    - _handlers (list[type[Handler]]) List of `Handlers` that will be executed.
+    - _handlers_args (list[dict[str, Any]]) Dict to store the arguments that will be provided to each `Handler` on creation.
+    - _running (bool) 
+
+    Note: Well I just learned about GIL... so basicaly parallelism is not posible right now,
+    so until furter notice just use one worker
+    """
+
     def __init__(self, data: Any, num_workers: int):
         self._input: Any = data
         self._workers: list[PipelineWorker] = [
@@ -15,12 +38,26 @@ class Pipeline:
         }
 
         self._output: Any = None
-        self._handlers: list[Handler] = []
+        self._handlers: list[type[Handler]] = []
+        self._handlers_args: list[dict[str, Any]] = []
         self._running: bool = False
 
-    def add_handler(self, handler: Handler):
+        self.logger: logging.Logger = logging.getLogger("wikjote")
+
+    def add_handler(self, handler: type[Handler], arguments: dict[str, Any]):
+        """
+        Adds a new handler to the pipeline.
+
+        This method allows adding an additional handler to process data within the pipeline.
+        The handler should implement the `process` method which defines how the input data is processed.
+
+        Arguments:
+            - handler (Handler): A Handler instance that will be added to the pipeline for processing data.
+        """
+
         if len(self._handlers) == 0 or handler.is_compatible(self._handlers[-1]):
             self._handlers.append(handler)
+            self._handlers_args.append(arguments)
         else:
             raise IncompatibleHandlersError(self._handlers[-1], handler)
 
@@ -35,26 +72,25 @@ class Pipeline:
         runnig_workers = self._workers.copy()
         while len(runnig_workers) > 0:
             for worker in self._workers:
-                step = self.workers_step[worker]
-                next_step = step + 1
-
-                if next_step == len(self._handlers):
-                    runnig_workers.remove(worker)
-                    continue
-
-                next_handler = self._handlers[next_step]
-
-                if next_handler.is_concurrent:
-                    self._switch_no_concurrent(next_step)
-
-                if not worker.is_runnig():
-                    worker.join()
+                if worker in runnig_workers and not worker.is_runnig():
                     step = self.workers_step[worker]
                     next_step = step + 1
 
-                    self.workers_step[worker] = next_step
-                    worker.set_handler(self._handlers[next_step])
-                    worker.start()
+                    if next_step == len(self._handlers):
+                        runnig_workers.remove(worker)
+                        continue
+
+                    next_handler = self._handlers[next_step]
+
+                    if next_handler.is_concurrent():
+                        worker.join()
+                        self.workers_step[worker] = next_step
+                        worker.set_handler(
+                            self._handlers[next_step](**self._handlers_args[next_step])
+                        )
+                        worker.start()
+                    else:
+                        self._switch_no_concurrent(next_step)
 
         # all the workers are done merge the data
         self._output = self._merge_data()
@@ -65,7 +101,7 @@ class Pipeline:
         tmp_workers = self._workers.copy()
         while len(tmp_workers) > 0:
             for worker in self._workers:
-                if not worker.is_runnig():
+                if worker in tmp_workers and not worker.is_runnig():
                     worker.join()
                     step = self.workers_step[worker]
                     next_step = step + 1
@@ -73,7 +109,9 @@ class Pipeline:
                         tmp_workers.remove(worker)
                     else:
                         self.workers_step[worker] = next_step
-                        worker.set_handler(self._handlers[next_step])
+                        worker.set_handler(
+                            self._handlers[next_step](**self._handlers_args[next_step])
+                        )
                         worker.start()
 
         # merge the data of all workers
@@ -81,7 +119,9 @@ class Pipeline:
         # setup a worker with the no concurrent handler
         concurrent_worker = self._workers[0]
         self.workers_step[concurrent_worker] = concurrent_index
-        concurrent_worker.set_handler(self._handlers[concurrent_index])
+        concurrent_worker.set_handler(
+            self._handlers[concurrent_index](**self._handlers_args[concurrent_index])
+        )
         concurrent_worker.set_data(data_merged)
         # start the worker and wait for him to finish
         concurrent_worker.start()
@@ -128,11 +168,11 @@ class Pipeline:
 
 
 class IncompatibleHandlersError(BaseException):
-    def __init__(self, pre_handler: Handler, new_handler: Handler):
+    def __init__(self, pre_handler: type[Handler], new_handler: type[Handler]):
         self.pre_handler = pre_handler
         self.new_handler = new_handler
         super().__init__(
             f"Tried to append Handlers with incompatible I/O types. \
-            {self.new_handler.__class__.__name__} with input types: {self.new_handler.get_input_type()}, \
-            tried to be appended to {self.pre_handler.__class__.__name__} with output type: {self.pre_handler.get_output_type()}"
+            {self.new_handler.__name__} with input types: {self.new_handler.get_input_type()}, \
+            tried to be appended to {self.pre_handler.__name__} with output type: {self.pre_handler.get_output_type()}"
         )

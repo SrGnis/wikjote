@@ -6,103 +6,202 @@
     },
     "rules": [
         {
-            "name": "wiktionary_es_etimology",
-            "type": "NameRule",
-            "args": ["Etimología"],
-            "section_type": "etymology",
-            "processor": {
-                "module_name": "wikjote.internal.processors.defaultprocessor",
-                "class_name": "DefaultProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_etimology",
+                "type": "RegExRule",
+                "section_type": "etymology",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.defaultprocessor",
+                    "class_name": "DefaultProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "regex":"Etimología.*",
+                "field":"name"
             }
         },
         {
-            "name": "wiktionary_es_idioms",
-            "type": "NameRule",
-            "args": ["Locuciones"],
-            "section_type": "idioms",
-            "processor": {
-                "module_name": "wikjote.internal.processors.listprocessor",
-                "class_name": "ListProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_idioms",
+                "type": "NameRule",
+                "section_type": "idioms",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.listprocessor",
+                    "class_name": "ListProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Locuciones"
             }
         },
         {
-            "name": "wiktionary_es_add_info",
-            "type": "NameRule",
-            "args": ["Información adicional"],
-            "section_type": "additional_info",
-            "processor": {
-                "module_name": "wikjote.internal.processors.listprocessor",
-                "class_name": "ListProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_add_info",
+                "type": "NameRule",
+                "section_type": "additional_info",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.listprocessor",
+                    "class_name": "ListProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Información adicional"
             }
         },
         {
-            "name": "wiktionary_es_see_more",
-            "type": "NameRule",
-            "args": ["Véase también"],
-            "section_type": "see_more",
-            "processor": {
-                "module_name": "wikjote.internal.processors.listprocessor",
-                "class_name": "ListProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_see_more",
+                "type": "NameRule",
+                "section_type": "see_more",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.listprocessor",
+                    "class_name": "ListProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Véase también"
             }
         },
         {
-            "name": "wiktionary_es_translations",
-            "type": "NameRule",
-            "args": ["Traducciones"],
-            "section_type": "translations",
-            "processor": {
-                "module_name": "wikjote.internal.processors.translationsprocessor",
-                "class_name": "TranslationsProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_translations",
+                "type": "NameRule",
+                "section_type": "translations",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.translationsprocessor",
+                    "class_name": "TranslationsProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Traducciones"
             }
         },
         {
-            "name": "wiktionary_es_languaje",
-            "type": "XPathRule",
-            "args": ["./descendant::*[@class='headline-lang']"],
-            "section_type": "languaje",
-            "processor": {
-                "module_name": "wikjote.internal.processors.languageprocessor",
-                "class_name": "LanguageProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_languaje",
+                "type": "XPathRule",
+                "section_type": "languaje",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.languageprocessor",
+                    "class_name": "LanguageProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "xpath":"./@data-level='2'"
             }
         },
         {
-            "name": "wiktionary_es_verb_form",
-            "type": "NameRule",
-            "args": ["Forma verbal"],
-            "section_type": "verb_form",
-            "processor": {
-                "module_name": "wikjote.internal.processors.sensesprocessor",
-                "class_name": "SensesProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_flexive_form",
+                "type": "NameRule",
+                "section_type": "flexive_form",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.defaultprocessor",
+                    "class_name": "DefaultProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Forma flexiva"
             }
         },
         {
-            "name": "wiktionary_es_senses",
-            "type": "XPathRule",
-            "args": ["./child::dl"],
-            "section_type": "senses",
-            "processor": {
-                "module_name": "wikjote.internal.processors.sensesprocessor",
-                "class_name": "SensesProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_verb_form",
+                "type": "NameRule",
+                "section_type": "verb_form",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.sensesprocessor",
+                    "class_name": "SensesProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Forma verbal"
             }
         },
         {
-            "name": "wiktionary_es_conjugation",
-            "type": "NameRule",
-            "args": ["Conjugación"],
-            "section_type": "conjugation",
-            "processor": {
-                "module_name": "wikjote.internal.processors.tableprocessor",
-                "class_name": "TableProcessor",
-                "is_file": false
+            "rule": {
+                "name": "wiktionary_es_senses",
+                "type": "XPathRule",
+                "section_type": "senses",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.sensesprocessor",
+                    "class_name": "SensesProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "xpath":"./child::dl"
             }
+        },
+        {
+            "rule": {
+                "name": "wiktionary_es_conjugation",
+                "type": "NameRule",
+                "section_type": "conjugation",
+                "processor": {
+                    "module_name": "wikjote.internal.processors.tableprocessor",
+                    "class_name": "TableProcessor",
+                    "is_file": false
+                }
+            },
+            "arguments":{
+                "name":"Conjugación"
+            }
+        }
+    ],
+    "pipeline": [
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.remove_empty",
+                "class_name": "RemoveEmptyHandler",
+                "is_file": false
+            },
+            "arguments":{}
+        },
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.remove_string_raw",
+                "class_name": "ReplaceStringRawHandler",
+                "is_file": false
+            },
+            "arguments":{
+                "pattern_str": "mw-parser-output .definicion-impropia{font-style:italic}",
+                "replacement": ""
+            }
+        },
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.correct_attributes",
+                "class_name": "CorrectAttributesHandler",
+                "is_file": false
+            },
+            "arguments":{}
+        },
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.dump_json",
+                "class_name": "DumpJsonHandler",
+                "is_file": false
+            },
+            "arguments":{
+                "output_path": "./wikjote_dir/clean.json"
+            }
+        },
+        {
+            "handler": {
+                "module_name": "wikjote.internal.handlers.structurize_es",
+                "class_name": "StructurizeHandler",
+                "is_file": false
+            },
+            "arguments":{}
         }
     ]
 }

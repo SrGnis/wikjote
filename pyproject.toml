@@ -20,7 +20,8 @@ classifiers = [
 ]
 dependencies = [
   "libzim",
-  "lxml"
+  "lxml",
+  "requests"
 ]
 
 [tool.setuptools.package-data]

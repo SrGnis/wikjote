@@ -5,7 +5,28 @@ from lxml.etree import ElementBase
 from wikjote.queries import xpathqueries
 
 
-def parse_table(root: ElementBase):
+def parse_table(root: ElementBase) -> dict | None:
+    """Parse a table of flections within an HTML document. 
+
+    This method extracts and processes the data from the provided root element.
+    The function supports parsing tables with different row structures.
+    This method also handles cells in columns spanned across multiple table cells
+    due to the rowspan attribute by adjusting child elements accordingly.
+    Special consideration is given to handling sublevels within the table structure
+    using the sublevels dictionary, where row indexes are keys and a nested dictionary
+    representing column name as key and boolean value indicating whether clearance should be performed on that level or not.
+
+    Parameters:
+    - root (ElementBase): The root element containing the table data to parse.
+    - (hardcoded)row_skips (list): A list of row indices to skip during processing.
+    - (hardcoded)sublevels (dict): A dictionary mapping row indexes to sublevel configurations including column name and a boolean clear value. Modifies the behavior by adding an additional layer of parsing when necessary.
+
+    Returns:
+    - None or a dictionary where each nested key corresponds to a combination of the column and row headers with the data of the coresponding cell.
+
+    """
+
+    #TODO: the following variables should be initialized by arguments 
     row_skips = [8, 9, 15, 21, 22, 26, 32, 35]  # rows that should not be processed
     sublevels = {
         8: {"name": "indicativo", "end": 21, "clear": False},
@@ -16,7 +37,7 @@ def parse_table(root: ElementBase):
     flection_obj = None
     flection_table_found: list[ElementBase] = root.xpath(xpathqueries["flection"])
     if len(flection_table_found) > 0:
-        flection_table: ElementBase = flection_table_found[0]
+        flection_table: ElementBase = flection_table_found[-1]
         rows: list[ElementBase] = flection_table.xpath(".//tr")
 
         flection_obj = {}
@@ -128,4 +149,10 @@ def get_dict_level(dict_obj, levels):
 
 
 def get_all_text(element: ElementBase) -> str:
+    for child in element.iterchildren():
+        if(child.tag == "sup"):
+            element.replace(child, ElementBase(" "))
+        if(child.tag == "br"):
+            element.replace(child, ElementBase(","))
+
     return "".join(element.itertext())  # type: ignore

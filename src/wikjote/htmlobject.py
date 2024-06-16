@@ -1,12 +1,13 @@
 from __future__ import annotations
 import logging
+from typing import Sized
 from lxml.etree import ElementBase
 
 from wikjote.exceptions import XMLNotFound
 
 
 class HTMLObject:
-    """A wrapper class for lxml.etree.ElementBase with some utility methods.
+    """A wrapper class for `lxml.etree.ElementBase` with some utility methods.
 
     Attributes:
         root: The wrapped ElementBase.
@@ -29,11 +30,13 @@ class HTMLObject:
 
     @staticmethod
     def get_all_text(
-        element: ElementBase
-        | HTMLObject
-        | list[ElementBase]
-        | list[HTMLObject]
-        | list[HTMLObject | ElementBase],
+        element: (
+            ElementBase
+            | HTMLObject
+            | list[ElementBase]
+            | list[HTMLObject]
+            | list[HTMLObject | ElementBase]
+        ),
     ) -> str:
         """Static method to get all the inner text on the elements.
 
@@ -55,7 +58,7 @@ class HTMLObject:
     def text(self) -> str:
         """Get the inner text of this object.
 
-        Calls get_all_text() to get the text.
+        Calls `get_all_text()` to get the text.
 
         Returns:
             str: The inner text.
@@ -90,11 +93,28 @@ class HTMLObject:
         if len(result) == 0:
             raise XMLNotFound(query)
         return result
+    
+    def seach_check(self, query: str) -> bool:
+        """Returns if the xpath query finds any result.
+
+        Args:
+            query (str): A xpath query.
+
+        Returns:
+            bool
+        """
+        xpath_result = self.root.xpath(query)
+        if (isinstance(xpath_result, bool)):
+            return xpath_result
+        if (isinstance(xpath_result, Sized)):
+            return (len(xpath_result) > 0)
+        return False
+
 
     def parse_attributes(self):
-        """Parse the elements of a atribute list of ES wiktionary.
+        """Parse the elements of a attribute list of ES wiktionary.
 
-        Given a atrribute list following this schema:
+        Given a attribute list following this schema:
 
         <ul>
           <li>
@@ -122,7 +142,11 @@ class HTMLObject:
         for content in contents:
             split = content.text().split(":")
             if len(split) == 2:
-                attr_name = split[0].strip()
+                attr_name = str.lower(split[0].strip())
+                # appling plurals
+                # TODO: move this to a handler?
+                if attr_name[-1] != "s":
+                    attr_name = attr_name + "s"
                 attr_content = split[1].strip(" .")
                 res[attr_name] = attr_content
 
